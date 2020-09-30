@@ -9,7 +9,7 @@
       - name: Include all deployed hosts keys in known_hosts
         connection: local
         shell: |
-          ssh-keygen -F {{ ansible_host }} || 
+          ssh-keygen -R {{ ansible_host }}
           ssh-keyscan -H {{ ansible_host }} >> ~/.ssh/known_hosts
         ignore_errors: True
         when: 
@@ -67,7 +67,7 @@
           - all:!local:!pfsense
 
       - name: Reboot to apply system changes.
-        shell: "sleep 5 && reboot"
+        shell: "shutdown -r -o -n now"
         become: true
         async: 1
         poll: 0
