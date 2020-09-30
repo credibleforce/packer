@@ -1,0 +1,173 @@
+---
+  # update the list of known_hosts so ssh will not fail to connect
+  - hosts: all
+    gather_facts: False
+    vars:
+      ansible_connection: local
+      ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    tasks:
+      - name: Include all deployed hosts keys in known_hosts
+        connection: local
+        shell: |
+          ssh-keygen -F {{ ansible_host }} || 
+          ssh-keyscan -H {{ ansible_host }} >> ~/.ssh/known_hosts
+        ignore_errors: True
+        when: 
+          - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
+
+  # update pfsense with dhcp static reservation and dns entries for hosts
+  - hosts: pfsense
+    gather_facts: False
+    tasks:
+      - name: show all the hosts matching the pattern
+        debug:
+          msg: 
+            - "{{ item }}"
+            - "{{ hostvars[item]['prod_ip'] }}"
+            - "{{ hostvars[item]['prod_mac'] }}"
+        with_inventory_hostnames:
+          - all:!local:!pfsense
+
+      - name: Remove any existing static dhcp mappings
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/dhcpd/lan/staticmap
+          state: absent
+
+      - name: Add static mappings for all hosts
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/dhcpd/lan
+          input_type: xml
+          pretty_print: yes
+          add_children:
+            - "<staticmap><mac>{{ hostvars[item]['prod_mac'] }}</mac><cid>{{ hostvars[item]['inventory_hostname'] }}</cid><ipaddr>{{ hostvars[item]['prod_ip'] }}</ipaddr><hostname>{{ hostvars[item]['inventory_hostname'] }}</hostname><descr><![CDATA[{{ hostvars[item]['inventory_hostname'] }}]]></descr><arp_table_static_entry></arp_table_static_entry><filename></filename><rootpath></rootpath><defaultleasetime></defaultleasetime><maxleasetime></maxleasetime><gateway></gateway><domain></domain><domainsearchlist></domainsearchlist><ddnsdomain></ddnsdomain><ddnsdomainprimary></ddnsdomainprimary><ddnsdomainkeyname></ddnsdomainkeyname><ddnsdomainkey></ddnsdomainkey><tftp></tftp><ldap></ldap></staticmap>"
+        with_inventory_hostnames:
+          - all:!local:!pfsense      
+
+      - name: Remove any existing dns entries mappings
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/unbound/hosts
+          state: absent
+
+      - name: Add dns entry for all hosts
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/unbound
+          input_type: xml
+          pretty_print: yes
+          add_children:
+            "<hosts><host>{{ hostvars[item]['inventory_hostname'] }}</host><domain>lab.local</domain><ip>{{ hostvars[item]['prod_ip'] }}</ip><descr></descr><aliases></aliases></hosts>"
+        with_inventory_hostnames:
+          - all:!local:!pfsense
+
+      - name: Reboot to apply system changes.
+        shell: "sleep 5 && reboot"
+        become: true
+        async: 1
+        poll: 0
+      
+      - name: Wait for reboot to complete
+        wait_for_connection:
+          connect_timeout: 20
+          sleep: 5
+          delay: 5
+          timeout: 300
+  
+  # update all of the hostnames with assigned inventory hostname
+  - hosts: all:!local:!pfsense
+    gather_facts: True
+    vars:
+      ansible_timeout: 600
+    environment:
+    pre_tasks:
+      - name: Windows Variable
+        include_vars: vars/windows.yml
+        when: ansible_system == 'Win32NT'
+      
+      - name: Linux Variable
+        include_vars: vars/linux.yml
+        when: ansible_system == 'Linux'
+    post_tasks:
+    tasks:
+      - name: Distribution
+        debug: 
+            msg:
+              - "{{ansible_user_id}}"
+              - "{{inventory_hostname}}"
+              - "{{ ansible_system }}"
+              - "{{ ansible_os_family }}"
+
+      - name: Wait for system to become reachable
+        wait_for_connection:
+          timeout: 900
+
+      - name: "Windows Base Provisioning"
+        win_shell: |
+          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope MachinePolicy
+          $admin = [adsi]("WinNT://./Administrator, user")
+          $admin.PSBase.Invoke("SetPassword", "{{ windows.local_admin_password }}")
+          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5 -Force
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+        when: ansible_system == 'Win32NT'
+    
+      - name: "Change the hostname on Windows"
+        win_hostname:
+          name: "{{inventory_hostname}}"
+        register: res
+        when: ansible_system == 'Win32NT'
+
+      # important to add this first or sudo fails hostname lookup
+      - name: Add hostname to /etc/hosts on Linux
+        become: true
+        lineinfile:
+          dest: /etc/hosts
+          regexp: '^127\.0\.0\.1[ \t]+localhost'
+          line: '127.0.0.1 localhost {{inventory_hostname}}'
+          state: present
+        when: ansible_system == 'Linux'
+
+      - name: "Change the hostname on Linux"
+        become: true
+        hostname:
+          name: "{{inventory_hostname}}"
+        when: ansible_system == 'Linux'
+
+      - name: Run whoami without become.
+        command: whoami
+        changed_when: false
+        become: false
+        register: whoami
+        when: ansible_system == 'Linux'
+
+      - name: Add authorized key on Linux
+        authorized_key:
+          user: "{{ whoami.stdout }}"
+          state: present
+          key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+        when: ansible_system == 'Linux'
+
+      - name: Reboot on Windows
+        win_reboot:
+        when: 
+          - ansible_system == 'Win32NT'
+          - res.reboot_required
+
+      - name: Reboot on Linux
+        become: true
+        shell: "shutdown -r -f -t 0"
+        async: 1
+        poll: 0
+        when: ansible_system == 'Linux'
+        
+      - name: Wait for the reboot to complete on Linux
+        wait_for_connection:
+          connect_timeout: 20
+          sleep: 5
+          delay: 5
+          timeout: 300

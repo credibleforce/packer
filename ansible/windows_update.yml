@@ -1,0 +1,24 @@
+- hosts: all
+  tasks:
+  - name: Install only security updates
+    win_updates:
+      category_names:
+      - SecurityUpdates
+      - CriticalUpdates
+      - UpdateRollups
+      log_path: "c:/ansible_win_update.log"
+      blacklist:
+        - Windows Malicious Software Removal Tool for Windows
+        - \d{4}-\d{2} Cumulative Update for Windows Server 2016
+        - \d{4}-\d{2} Security Monthly Quality Rollup
+        - \d{4}-\d{2} Servicing Stack Update
+        - \d{4}-\d{2} Security and Quality Rollup for .NET Framework
+    register: update_result
+    failed_when: 'update_result.failed_update_count is defined and update_result.failed_update_count == update_result.found_update_count'
+    when: "(update_result is not defined) or (update_result.found_update_count is defined and update_result.found_update_count > 0)"
+
+  - name: reboot host if required
+    win_reboot:
+      shutdown_timeout_sec: 30
+      reboot_timeout_sec: 3600
+    when: update_result.reboot_required

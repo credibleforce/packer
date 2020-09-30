@@ -1,0 +1,1 @@
+This directory will contain inventory file for ansible.

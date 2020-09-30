@@ -1,0 +1,159 @@
+{
+  "builders": [
+    {
+      "name": "{{user `vm_name`}}",
+      "boot_wait": "2m",
+      "communicator": "winrm",
+      "cpus": 2,
+      "disk_adapter_type": "ide",
+      "disk_size": "{{user `disk_size`}}",
+      "floppy_files": [
+        "{{user `autounattend`}}",
+        "./floppy/WindowsPowershell.lnk",
+        "./floppy/PinTo10.exe",
+        "./scripts/fixnetwork.ps1",
+        "./scripts/disable-screensaver.ps1",
+        "./scripts/disable-winrm.ps1",
+        "./scripts/enable-winrm.ps1",
+        "./scripts/microsoft-updates.bat",
+        "./scripts/enable-tls12.bat",
+        "./scripts/unattend.xml",
+        "./scripts/win-updates.ps1",
+        "./scripts/sysprep.bat"
+      ],
+      "guest_os_type": "windows9srv-64",
+      "headless": "{{user `headless`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "memory": "{{user `memory`}}",
+      "shutdown_command": "a:/sysprep.bat",
+      "shutdown_timeout": "15m",
+      "skip_compaction": true,
+      "tools_upload_flavor": "windows",
+      "type": "vmware-iso",
+      "output_directory": "builds",
+      "version": 14,
+      "vm_name": "{{user `vm_name`}}",
+      "vmx_data": {
+        "RemoteDisplay.vnc.enabled": "false",
+        "RemoteDisplay.vnc.port": "5900"
+      },
+      "vmx_remove_ethernet_interfaces": "{{user `vmx_remove_ethernet_interfaces`}}",
+      "vnc_port_max": 5980,
+      "vnc_port_min": 5900,
+      "winrm_password": "vagrant",
+      "winrm_timeout": "{{user `winrm_timeout`}}",
+      "winrm_username": "vagrant",
+      "winrm_use_ssl": "true",
+      "winrm_insecure": "true",
+      "winrm_use_ntlm": "true"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "keep_input_artifact": false,
+        "output": "{{user `vm_name`}}_{{.Provider}}.box",
+        "type": "vagrant",
+        "vagrantfile_template": "vagrantfile-{{user `vm_name`}}.template"
+      },
+      {
+          "inline": [
+              "/usr/lib/vmware-ovftool/ovftool output-{{user `vm_name`}}/{{user `vm_name`}}.vmx {{user `vm_name`}}.ova"
+          ],
+          "type": "shell-local"
+      },
+      {
+          "files": [
+              "{{user `vm_name`}}.ova"
+          ],
+          "type": "artifice"
+      },
+      {
+        "ami_name": "ami-{{user `vm_name`}}-latest-{{timestamp}}",
+        "keep_input_artifact": true,
+        "region": "us-east-1",
+        "s3_bucket_name": "proservlab-images",
+        "s3_key_name": "images/{{user `vm_name`}}.ova",
+        "tags": {
+          "Description": "packer amazon-import {{user `vm_name`}} OVA {{timestamp}}"
+        },
+        "type": "amazon-import"
+      }
+    ]
+  ],
+  "provisioners": [
+    {
+      "user": "vagrant",
+      "use_proxy": false,
+      "extra_arguments": [ 
+        "--extra-vars", "ansible_winrm_operation_timeout_sec=60 ansible_winrm_read_timeout_sec=120 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_python_interpreter=/usr/bin/python ansible_winrm_server_cert_validation=ignore", "-vvvv"
+        
+      ],
+      "playbook_file": "./ansible/windows_update_security_updates.yml",
+      "type": "ansible"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "user": "vagrant",
+      "use_proxy": false,
+      "extra_arguments": [
+        "--extra-vars", "ansible_winrm_operation_timeout_sec=60 ansible_winrm_read_timeout_sec=120 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_python_interpreter=/usr/bin/python ansible_winrm_server_cert_validation=ignore", "-vvvv"
+      ],
+      "playbook_file": "./ansible/windows_update.yml",
+      "type": "ansible"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
+      "scripts": [
+        "./scripts/vm-guest-tools.bat",
+        "./scripts/enable-rdp.bat"
+      ],
+      "type": "windows-shell"
+    },
+    {
+      "scripts": [
+        "./scripts/debloat-windows.ps1"
+      ],
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
+      "scripts": [
+        "./scripts/pin-powershell.bat",
+        "./scripts/set-winrm-automatic.bat",
+        "./scripts/uac-enable.bat",
+        "./scripts/compile-dotnet-assemblies.bat",
+        "./scripts/dis-updates.bat",
+        "./scripts/compact.bat"
+      ],
+      "type": "windows-shell"
+    }
+  ],
+  "variables": {
+    "autounattend": "./answer_files/2016/Autounattend.xml",
+    "vm_name": "windows_2016",
+    "disk_size": "61440",
+    "disk_type_id": "1",
+    "memory": "2048",
+    "headless": "false",
+    "hyperv_switchname": "{{env `hyperv_switchname`}}",
+    "iso_checksum": "md5:70721288BBCDFE3239D8F8C0FAE55F1F",
+    "iso_url": "https://software-download.microsoft.com/download/pr/Windows_Server_2016_Datacenter_EVAL_en-us_14393_refresh.ISO",
+    "restart_timeout": "5m",
+    "winrm_timeout": "4h",
+    "vmx_remove_ethernet_interfaces": "false"
+  }
+}
+

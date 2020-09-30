@@ -1,0 +1,78 @@
+---
+  - hosts: all
+    gather_facts: False
+    vars:
+      ansible_connection: local
+      ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    tasks:
+      - name: Include all deployed hosts keys in known_hosts
+        connection: local
+        shell: |
+          ssh-keygen -F {{ ansible_host }} || 
+          ssh-keyscan -H {{ ansible_host }} >> ~/.ssh/known_hosts
+        ignore_errors: True
+        when: 
+          - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
+  
+  - hosts: pfsense
+    gather_facts: False
+    tasks:
+      - name: show all the hosts matching the pattern
+        debug:
+          msg: 
+            - "{{ item }}"
+            - "{{ hostvars[item]['prod_ip'] }}"
+            - "{{ hostvars[item]['prod_mac'] }}"
+        with_inventory_hostnames:
+          - all:!local:!pfsense
+
+      - name: Remove any existing static dhcp mappings
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/dhcpd/lan/staticmap
+          state: absent
+
+      - name: Add static mappings for all hosts
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/dhcpd/lan
+          input_type: xml
+          pretty_print: yes
+          add_children:
+            - "<staticmap><mac>{{ hostvars[item]['prod_mac'] }}</mac><cid>{{ hostvars[item]['inventory_hostname'] }}</cid><ipaddr>{{ hostvars[item]['prod_ip'] }}</ipaddr><hostname>{{ hostvars[item]['inventory_hostname'] }}</hostname><descr><![CDATA[{{ hostvars[item]['inventory_hostname'] }}]]></descr><arp_table_static_entry></arp_table_static_entry><filename></filename><rootpath></rootpath><defaultleasetime></defaultleasetime><maxleasetime></maxleasetime><gateway></gateway><domain></domain><domainsearchlist></domainsearchlist><ddnsdomain></ddnsdomain><ddnsdomainprimary></ddnsdomainprimary><ddnsdomainkeyname></ddnsdomainkeyname><ddnsdomainkey></ddnsdomainkey><tftp></tftp><ldap></ldap></staticmap>"
+        with_inventory_hostnames:
+          - all:!local:!pfsense      
+
+      - name: Remove any existing dns entries mappings
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/unbound/hosts
+          state: absent
+
+      - name: Add dns entry for all hosts
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/unbound
+          input_type: xml
+          pretty_print: yes
+          add_children:
+            "<hosts><host>{{ hostvars[item]['inventory_hostname'] }}</host><domain>lab.local</domain><ip>{{ hostvars[item]['prod_ip'] }}</ip><descr></descr><aliases></aliases></hosts>"
+        with_inventory_hostnames:
+          - all:!local:!pfsense
+
+      - name: Reboot to apply system changes.
+        shell: "sleep 5 && reboot"
+        become: true
+        async: 1
+        poll: 0
+      
+      - name: Wait for reboot to complete
+        wait_for_connection:
+          connect_timeout: 20
+          sleep: 5
+          delay: 5
+          timeout: 300

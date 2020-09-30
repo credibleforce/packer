@@ -1,0 +1,9 @@
+[
+  {
+    "Description": "windows_7",
+    "Format": "ova",
+    "UserBucket": {
+        "S3Bucket": "proservlab-images",
+        "S3Key": "windows_7.ova"
+    }
+}]

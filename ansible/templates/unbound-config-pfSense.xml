@@ -1,0 +1,22 @@
+
+<unbound>
+	<enable></enable>
+	<dnssec></dnssec>
+	<active_interface>all</active_interface>
+	<outgoing_interface>all</outgoing_interface>
+	<custom_options></custom_options>
+	<hideidentity></hideidentity>
+	<hideversion></hideversion>
+	<dnssecstripped></dnssecstripped>
+	<port></port>
+	<sslport></sslport>
+	<sslcertref>5f05a8282feeb</sslcertref>
+	<system_domain_local_zone_type>transparent</system_domain_local_zone_type>
+	<hosts>
+		<host>pfsense</host>
+		<domain>lab.local</domain>
+		<ip>172.20.0.254</ip>
+		<descr></descr>
+		<aliases></aliases>
+	</hosts>
+</unbound>

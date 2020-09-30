@@ -1,0 +1,139 @@
+{
+  "builders": [
+    {
+      "name": "{{user `vm_name`}}",
+      "boot_wait": "2m",
+      "communicator": "winrm",
+      "cpus": 2,
+      "disk_adapter_type": "ide",
+      "disk_size": "{{user `disk_size`}}",
+      "disk_type_id": "{{user `disk_type_id`}}",
+      "floppy_files": [
+        "{{user `autounattend`}}",
+        "../shared/floppy/WindowsPowershell.lnk",
+        "../shared/floppy/PinTo10.exe",
+        "../shared/scripts/fixnetwork.ps1",
+        "../shared/scripts/disable-screensaver.ps1",
+        "../shared/scripts/disable-winrm.ps1",
+        "../shared/scripts/enable-winrm.ps1",
+        "../shared/scripts/microsoft-updates.bat",
+        "../shared/scripts/enable-tls12.bat",
+        "../shared/scripts/unattend.xml",
+        "../shared/scripts/win-updates.ps1",
+        "../shared/scripts/sysprep.bat"
+      ],
+      "guest_os_type": "windows9srv-64",
+      "headless": "{{user `headless`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "memory": "{{user `memory`}}",
+      "shutdown_command": "a:/sysprep.bat",
+      "shutdown_timeout": "15m",
+      "skip_compaction": true,
+      "tools_upload_flavor": "windows",
+      "type": "vmware-iso",
+      "output_directory": "builds",
+      "version": 14,
+      "vm_name": "{{user `vm_name`}}",
+      "vmx_data": {
+        "RemoteDisplay.vnc.enabled": "false",
+        "RemoteDisplay.vnc.port": "5900"
+      },
+      "vmx_remove_ethernet_interfaces": "{{user `vmx_remove_ethernet_interfaces`}}",
+      "vnc_port_max": 5980,
+      "vnc_port_min": 5900,
+      "winrm_password": "vagrant",
+      "winrm_timeout": "{{user `winrm_timeout`}}",
+      "winrm_username": "vagrant",
+      "winrm_use_ssl": "true",
+      "winrm_insecure": "true",
+      "winrm_use_ntlm": "true"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "keep_input_artifact": false,
+        "output": "{{user `vm_name`}}_{{.Provider}}.box",
+        "type": "vagrant",
+        "vagrantfile_template": "vagrantfile-{{user `vm_name`}}.template"
+      }
+    ]
+  ],
+  "provisioners": [
+    {
+      "user": "vagrant",
+      "use_proxy": false,
+      "extra_arguments": [ 
+        "--extra-vars", "ansible_winrm_operation_timeout_sec=60 ansible_winrm_read_timeout_sec=120 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_python_interpreter=/usr/bin/python ansible_winrm_server_cert_validation=ignore", "-vvvv"
+        
+      ],
+      "playbook_file": "../../ansible/windows_update_security_updates.yml",
+      "type": "ansible"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "user": "vagrant",
+      "use_proxy": false,
+      "extra_arguments": [
+        "--extra-vars", "ansible_winrm_operation_timeout_sec=60 ansible_winrm_read_timeout_sec=120 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_python_interpreter=/usr/bin/python ansible_winrm_server_cert_validation=ignore", "-vvvv"
+      ],
+      "playbook_file": "../../ansible/windows_update.yml",
+      "type": "ansible"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
+      "scripts": [
+        "../shared/scripts/vm-guest-tools.bat",
+        "../shared/scripts/enable-rdp.bat"
+      ],
+      "type": "windows-shell"
+    },
+    {
+      "scripts": [
+        "../shared/scripts/debloat-windows.ps1"
+      ],
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
+      "remote_path": "/tmp/script.bat",
+      "scripts": [
+        "../shared/scripts/pin-powershell.bat",
+        "../shared/scripts/compile-dotnet-assemblies.bat",
+        "../shared/scripts/set-winrm-automatic.bat",
+        "../shared/scripts/uac-enable.bat",
+        "../shared/scripts/dis-updates.bat",
+        "../shared/scripts/compact.bat"
+      ],
+      "type": "windows-shell"
+    }
+  ],
+  "variables": {
+    "autounattend": "./answer_files/2019/Autounattend.xml",
+    "vm_name": "windows_2019",
+    "disk_size": "61440",
+    "disk_type_id": "1",
+    "memory": "2048",
+    "headless": "false",
+    "iso_checksum": "sha256:549bca46c055157291be6c22a3aaaed8330e78ef4382c99ee82c896426a1cee1",
+    "iso_url": "https://software-download.microsoft.com/download/pr/17763.737.190906-2324.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us_1.iso",
+    "manually_download_iso_from": "https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019",
+    "restart_timeout": "5m",
+    "virtio_win_iso": "~/virtio-win.iso",
+    "winrm_timeout": "6h",
+    "vmx_remove_ethernet_interfaces": "false"
+  }
+}
+

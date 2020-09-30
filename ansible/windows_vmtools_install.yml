@@ -1,0 +1,84 @@
+---
+  - hosts: all
+    gather_facts: False
+    tasks:
+      - name: Download 7zip
+        win_get_url:
+          url: https://www.7-zip.org/a/7z1900-x64.msi
+          dest: C:\Windows\Temp\7z1900-x64.msi
+        retries: 3
+        delay: 5
+        register: package_result
+        until: package_result.status_code == 200
+        ignore_errors: yes
+      
+      - name: win | Report errors with downloading files
+        fail:
+          msg: "Unable to download {{ package_result.url }}: {{ package_result.response|default(package_result.msg) }}"
+        when: package_result.status_code != 200 
+        
+      - name: Download Guest Tools
+        win_get_url:
+          url: https://softwareupdate.vmware.com/cds/vmw-desktop/ws/15.5.6/16341506/windows/packages/tools-windows.tar
+          dest: C:\Windows\Temp\vmware-tools.tar
+        retries: 3
+        delay: 5
+        register: package_result
+        until: package_result.status_code == 200
+        ignore_errors: yes
+      
+      - name: win | Report errors with downloading files
+        fail:
+          msg: "Unable to download {{ package_result.url }}: {{ package_result.response|default(package_result.msg) }}"
+        when: package_result.status_code != 200
+
+      - name: Install 7zip
+        win_shell: |
+          call set nopause=true && call msiexec /qb /i C:\Windows\Temp\7z1900-x64.msi
+        args:
+          executable: cmd
+
+      - name: Untar Guest Tools
+        win_shell: |
+          call set nopause=true && call "C:\Program Files\7-Zip\7z.exe" x -aoa -y "C:\Windows\Temp\vmware-tools.tar" -oC:\Windows\Temp
+        args:
+          executable: cmd
+        
+      - name: Extract ISO Files
+        win_shell: |
+          call set nopause=true && call "C:\Program Files\7-Zip\7z.exe" x -aoa -y "c:\windows\temp\VMware-tools-windows-*.iso" -oC:\Windows\Temp\VMWare
+        args:
+          executable: cmd
+      
+      - name: Remove ISO and Tar
+        win_shell: |
+          call set nopause=true && del /Q "C:\Windows\Temp\vmware-tools.tar" && del /Q "c:\windows\temp\VMware-tools-windows-*.iso"
+        args:
+          executable: cmd
+    
+      - name: Install Guest Tools
+        win_shell: |
+          call set nopause=true && call C:\Windows\Temp\VMWare\setup.exe /S /v"/qn /l*v c:\windows\temp\vmmsi.log REBOOT=R"
+        args:
+          executable: cmd
+        register: vmtools
+        ignore_errors: yes
+        
+      - name: Result
+        debug:
+          msg:
+            - "{{ vmtools }}"
+
+      - name: Remove ISO and Tar
+        win_shell: |
+          call set nopause=true && rd /S /Q "C:\Windows\Temp\VMware"
+        args:
+          executable: cmd
+        ignore_errors: yes
+
+      - name: Uninstall 7zip
+        win_shell: |
+          call set nopause=true && call msiexec /qb /x C:\Windows\Temp\7z1900-x64.msi
+        args:
+          executable: cmd
+        ignore_errors: yes

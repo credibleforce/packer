@@ -1,0 +1,110 @@
+{
+  "builders": [
+    {
+      "name": "{{user `vm_name`}}",
+      "boot_wait": "2m",
+      "cpus": 2,
+      "disk_adapter_type": "ide",
+      "disk_size": "{{user `disk_size`}}",
+      "floppy_files": [
+        "{{user `autounattend`}}",
+        "../shared/scripts/disable-winrm.ps1",
+        "../shared/scripts/enable-winrm.ps1",
+        "../shared/scripts/disable-screensaver.ps1",
+        "../shared/scripts/microsoft-updates.bat",
+        "../shared/scripts/unattend.xml",
+        "../shared/scripts/win-updates.ps1"
+      ],
+      "guest_os_type": "windows8srv-64",
+      "headless": true,
+      "iso_checksum": "{{user `iso_checksum`}",
+      "iso_url": "{{user `iso_url`}",
+      "memory": "{{user `memory`}}",
+      "shutdown_command": "a:/sysprep.bat",
+      "shutdown_timeout": "15m",
+      "tools_upload_flavor": "windows",
+      "type": "vmware-iso",
+      "output_directory": "builds",
+      "vmx_data": {
+        "RemoteDisplay.vnc.enabled": "false",
+        "RemoteDisplay.vnc.port": "5900"
+      },
+      "vm_name": "{{user `vm_name`}}",
+      "vmx_remove_ethernet_interfaces": "{{user `vmx_remove_ethernet_interfaces`}}",
+      "vnc_port_max": 5980,
+      "vnc_port_min": 5900,
+      "winrm_password": "vagrant",
+      "winrm_timeout": "{{user `winrm_timeout`}}",
+      "winrm_username": "vagrant"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "keep_input_artifact": false,
+        "output": "{{user `vm_name`}}_{{.Provider}}.box",
+        "type": "vagrant",
+        "vagrantfile_template": "vagrantfile-{{user `vm_name`}}.template"
+      },
+      {
+          "inline": [
+              "/usr/lib/vmware-ovftool/ovftool output-{{user `vm_name`}}/{{user `vm_name`}}.vmx {{user `vm_name`}}.ova"
+          ],
+          "type": "shell-local"
+      },
+      {
+          "files": [
+              "{{user `vm_name`}}.ova"
+          ],
+          "type": "artifice"
+      },
+      {
+        "ami_name": "ami-{{user `vm_name`}}-latest-{{timestamp}}",
+        "keep_input_artifact": true,
+        "region": "us-east-1",
+        "s3_bucket_name": "proservlab-images",
+        "s3_key_name": "images/{{user `vm_name`}}.ova",
+        "tags": {
+          "Description": "packer amazon-import {{user `vm_name`}} OVA {{timestamp}}"
+        },
+        "type": "amazon-import"
+      }
+    ]
+  ],
+  "provisioners": [
+    {
+      "execute_command": "{{.Vars}} cmd /c C:/Windows/Temp/script.bat",
+      "remote_path": "/tmp/script.bat",
+      "scripts": [
+        "../shared/scripts/vm-guest-tools.bat",
+        "../shared/scripts/chef.bat",
+        "../shared/scripts/vagrant-ssh.bat",
+        "../shared/scripts/disable-auto-logon.bat",
+        "../shared/scripts/enable-rdp.bat"
+      ],
+      "type": "shell"
+    },
+    {
+      "inline": [
+        "rm -rf /tmp/*"
+      ],
+      "type": "shell"
+    }
+  ],
+  "variables": {
+    "autounattend": "./answer_files/2012/Autounattend.xml",
+    "vm_name": "windows_2012",
+    "disk_size": "61440",
+    "disk_type_id": "1",
+    "memory": "2048",
+    "headless": "false",
+    "hyperv_switchname": "{{env `hyperv_switchname`}}",
+    "iso_checksum": "md5:8503997171f731d9bd1cb0b0edc31f3d",
+    "iso_url": "http://care.dlservice.microsoft.com/dl/download/6/2/A/62A76ABB-9990-4EFC-A4FE-C7D698DAEB96/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO",
+    "virtio_win_iso": "~/virtio-win.iso",
+    "restart_timeout": "30m",
+    "winrm_timeout": "6h",
+    "vmx_remove_ethernet_interfaces": "false"
+  }
+}
+
