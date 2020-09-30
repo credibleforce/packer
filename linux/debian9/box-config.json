@@ -16,10 +16,10 @@
     {
       "type": "ansible-local",
       "extra_arguments": [ "-vvvv" ],
-      "playbook_file": "../shared/main.yml",
+      "playbook_file": "../../ansible/main.yml",
       "role_paths": [ 
-        "../shared/roles/packer-rhel",
-        "../shared/roles/packer-debian"
+        "../../ansible/roles/packer-rhel",
+        "../../ansible/roles/packer-debian"
       ]
     },
     {
