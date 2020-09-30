@@ -137,7 +137,7 @@ Vagrant.configure("2") do |config|
             pfsense.vm.network "private_network", type: "dhcp", name: "/dev/vmnet3"
             pfsense.vm.provider :vmware_workstation do |v, override|
                 v.gui = true
-                v.vmx["name"] = i['name']
+                v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "2048"
                 v.vmx["numvcpus"] = "2"
                 v.vmx["ethernet0.wakeOnPcktRcv"] = "FALSE"
@@ -189,7 +189,7 @@ Vagrant.configure("2") do |config|
             #kali.vm.network "private_network", type: "dhcp", name: "/dev/vmnet3"
             kali.vm.provider :vmware_workstation do |v, override|
                 v.gui = true
-                v.vmx["name"] = i['name']
+                v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "2048"
                 v.vmx["numvcpus"] = "2"
                 v.vmx["ethernet0.pcislotnumber"] = "33"
@@ -237,7 +237,7 @@ Vagrant.configure("2") do |config|
             #centos.vm.network "private_network", type: "dhcp", name: "/dev/vmnet3"
             centos.vm.provider :vmware_workstation do |v, override|
                 v.gui = true
-                v.vmx["name"] = i['name']
+                v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "2048"
                 v.vmx["numvcpus"] = "2"
                 v.vmx["ethernet0.pcislotnumber"] = "33"
@@ -291,7 +291,7 @@ Vagrant.configure("2") do |config|
             #win16.vm.network "private_network", type: "dhcp", name: "/dev/vmnet3"
             win16.vm.provider :vmware_workstation do |v, override|
                 v.gui = true
-                v.vmx["name"] = i['name']
+                v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "2048"
                 v.vmx["numvcpus"] = "2"
                 #v.vmx["ethernet0.addressType"] = "generated"
@@ -354,7 +354,7 @@ Vagrant.configure("2") do |config|
             #win10.vm.network "private_network", type: "dhcp", name: "/dev/vmnet3"
             win10.vm.provider :vmware_workstation do |v, override|
                 v.gui = true
-                v.vmx["name"] = i['name']
+                v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "2048"
                 v.vmx["numvcpus"] = "2"
                 #v.vmx["ethernet0.addressType"] = "generated"
@@ -418,7 +418,7 @@ Vagrant.configure("2") do |config|
             #win7.vm.network "private_network", type: "dhcp", name: "/dev/vmnet3"
             win7.vm.provider :vmware_workstation do |v, override|
                 v.gui = true
-                v.vmx["name"] = i['name']
+                v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "2048"
                 v.vmx["numvcpus"] = "2"
                 #v.vmx["ethernet0.addressType"] = "generated"
