@@ -67,7 +67,7 @@
           - all:!local:!pfsense
 
       - name: Reboot to apply system changes.
-        shell: "shutdown -r -o -n now"
+        shell: "/etc/rc.reboot"
         become: true
         async: 1
         poll: 0

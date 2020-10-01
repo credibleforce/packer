@@ -1,0 +1,165 @@
+---
+all:
+  children:
+    local:
+      hosts:
+        localhost: {}
+      vars:
+        ansible_connection: local
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    lab:
+      children:
+        domain_controller:
+          hosts:
+            win16-dc1:
+              ansible_connection: winrm
+              ansible_ssh_port: '5986'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_winrm_transport: ntlm
+              ansible_winrm_server_cert_validation: ignore
+              ansible_winrm_scheme: https
+              ansible_winrm_operation_timeout_sec: '120'
+              ansible_winrm_read_timeout_sec: '600'
+              ansible_host: 172.28.0.247
+              prod_ip: 172.21.0.5
+              prod_mac: 00:0c:29:23:20:4b
+        certificate_authority:
+          hosts:
+            win16-dc1:
+              ansible_connection: winrm
+              ansible_ssh_port: '5986'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_winrm_transport: ntlm
+              ansible_winrm_server_cert_validation: ignore
+              ansible_winrm_scheme: https
+              ansible_winrm_operation_timeout_sec: '120'
+              ansible_winrm_read_timeout_sec: '600'
+              ansible_host: 172.28.0.247
+              prod_ip: 172.21.0.5
+              prod_mac: 00:0c:29:23:20:4b
+        splunk_universal_forwarder:
+          hosts:
+            win16-dc1:
+              ansible_connection: winrm
+              ansible_ssh_port: '5986'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_winrm_transport: ntlm
+              ansible_winrm_server_cert_validation: ignore
+              ansible_winrm_scheme: https
+              ansible_winrm_operation_timeout_sec: '120'
+              ansible_winrm_read_timeout_sec: '600'
+              ansible_host: 172.28.0.247
+              prod_ip: 172.21.0.5
+              prod_mac: 00:0c:29:23:20:4b
+            win16-wef1:
+              ansible_connection: winrm
+              ansible_ssh_port: '5986'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_winrm_transport: ntlm
+              ansible_winrm_server_cert_validation: ignore
+              ansible_winrm_scheme: https
+              ansible_winrm_operation_timeout_sec: '120'
+              ansible_winrm_read_timeout_sec: '600'
+              ansible_host: 172.28.0.248
+              prod_ip: 172.21.0.10
+              prod_mac: 00:0c:29:dc:45:f9
+        wef_server:
+          hosts:
+            win16-wef1:
+              ansible_connection: winrm
+              ansible_ssh_port: '5986'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_winrm_transport: ntlm
+              ansible_winrm_server_cert_validation: ignore
+              ansible_winrm_scheme: https
+              ansible_winrm_operation_timeout_sec: '120'
+              ansible_winrm_read_timeout_sec: '600'
+              ansible_host: 172.28.0.248
+              prod_ip: 172.21.0.10
+              prod_mac: 00:0c:29:dc:45:f9
+        member_server:
+          hosts:
+            win16-svr1:
+              ansible_connection: winrm
+              ansible_ssh_port: '5986'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_winrm_transport: ntlm
+              ansible_winrm_server_cert_validation: ignore
+              ansible_winrm_scheme: https
+              ansible_winrm_operation_timeout_sec: '120'
+              ansible_winrm_read_timeout_sec: '600'
+              ansible_host: 172.28.0.249
+              prod_ip: 172.21.0.11
+              prod_mac: 00:0c:29:d1:1d:a9
+            win10-dsk1:
+              ansible_connection: winrm
+              ansible_ssh_port: '5986'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_winrm_transport: ntlm
+              ansible_winrm_server_cert_validation: ignore
+              ansible_winrm_scheme: https
+              ansible_winrm_operation_timeout_sec: '120'
+              ansible_winrm_read_timeout_sec: '600'
+              ansible_host: 172.28.0.250
+              prod_ip: 172.21.0.20
+              prod_mac: 00:0c:29:88:2c:ad
+            win7-dsk1:
+              ansible_connection: winrm
+              ansible_ssh_port: '5986'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_winrm_transport: ntlm
+              ansible_winrm_server_cert_validation: ignore
+              ansible_winrm_scheme: https
+              ansible_winrm_operation_timeout_sec: '120'
+              ansible_winrm_read_timeout_sec: '600'
+              ansible_host: 172.28.0.251
+              prod_ip: 172.21.0.21
+              prod_mac: 00:0c:29:3c:42:5d
+        ansible:
+          hosts:
+            ansible-srv1:
+              ansible_ssh_port: '22'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_become_password: vagrant
+              ansible_host: 172.28.0.245
+              prod_ip: 172.21.0.30
+              prod_mac: 00:0c:29:1c:b5:27
+        splunk_standalone:
+          hosts:
+            splk-sh1:
+              ansible_ssh_port: '22'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_become_password: vagrant
+              ansible_host: 172.28.0.246
+              prod_ip: 172.21.0.40
+              prod_mac: 00:0c:29:a6:13:e2
+        kali:
+          hosts:
+            kali-pen1:
+              ansible_ssh_port: '22'
+              ansible_ssh_user: kali
+              ansible_ssh_pass: kali
+              ansible_become_password: kali
+              ansible_host: 172.28.0.167
+              prod_ip: 172.21.0.60
+              prod_mac: 00:0c:29:33:10:ee
+        pfsense:
+          hosts:
+            pfsense-gw1:
+              ansible_ssh_port: '22'
+              ansible_ssh_user: vagrant
+              ansible_ssh_pass: vagrant
+              ansible_become_password: vagrant
+              ansible_host: 172.28.0.178
+              prod_ip: 172.21.0.254
+              prod_mac: 00:0c:29:3e:c3:8b

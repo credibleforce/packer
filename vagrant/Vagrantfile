@@ -12,8 +12,9 @@ insecure_key_path = File.join(Dir.home, ".vagrant.d", "insecure_private_key")
 private_key = IO.read(private_key_path)
 public_key = IO.read(public_key_path)
 
-INVENTORY_FILE = File.join(File.dirname(__FILE__), "..","ansible", "hosts","inventory.yml")
-PLAYBOOK_FILE = File.join(File.dirname(__FILE__), "..", "ansible", "playbook.yml")
+ANSIBLE_DIR = File.join(File.dirname(__FILE__), "..","ansible")
+INVENTORY_FILE = File.join(ANSIBLE_DIR, "hosts","inventory.yml")
+PLAYBOOK_FILE = File.join(ANSIBLE_DIR, "playbook.yml")
 
 if File.exists?(INVENTORY_FILE)
     File.delete(INVENTORY_FILE)
@@ -561,7 +562,7 @@ Vagrant.configure("2") do |config|
 
                         # set hostname and ssh key based auth
                         puts("Running post build configuration...")
-                        result=`ansible-playbook #{PLAYBOOK_FILE} -i #{INVENTORY_FILE} -v`
+                        result=`cd #{ANSIBLE_DIR} && ansible-playbook #{PLAYBOOK_FILE} -i #{INVENTORY_FILE} -v`
                         puts(result)
                         puts("Post build configuration complete.")
 
