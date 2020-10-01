@@ -6,13 +6,20 @@
       ansible_connection: local
       ansible_python_interpreter: "{{ ansible_playbook_python }}"
     tasks:
-      - name: Include all deployed hosts keys in known_hosts
-        connection: local
-        shell: |
-          ssh-keygen -R {{ ansible_host }}
-          ssh-keygen -F {{ ansible_host }} || 
-          ssh-keyscan -H {{ ansible_host }} >> ~/.ssh/known_hosts
-        ignore_errors: True
+      - name: get port, default 22
+        delegate_to: localhost
+        set_fact:
+          ansible_ssh_port: "{{ hostvars[inventory_hostname]['ansible_ssh_port'] | default('22') }}"
+        when: 
+          - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
+
+      - name: Ensure ssh host key known
+        delegate_to: localhost
+        lineinfile:
+          dest: ~/.ssh/known_hosts
+          create: yes
+          state: present
+          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + ansible_host) }}"
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
 
@@ -71,6 +78,7 @@
         become: true
         reboot:
           reboot_timeout: 300
+          post_reboot_delay: 90
   
   # update all of the hostnames with assigned inventory hostname
   - hosts: all:!local:!pfsense
@@ -102,7 +110,6 @@
 
       - name: "Windows Base Provisioning"
         win_shell: |
-          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
           $admin = [adsi]("WinNT://./{{ windows.local_admin_user }}, user")
           $admin.PSBase.Invoke("SetPassword", "{{ windows.local_admin_password }}")
           Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5 -Force
@@ -147,6 +154,8 @@
 
       - name: Reboot on Windows
         win_reboot:
+          reboot_timeout: 300
+          post_reboot_delay: 90
         when: 
           - ansible_system == 'Win32NT'
           - res.reboot_required
@@ -155,4 +164,5 @@
         become: true
         reboot:
           reboot_timeout: 300
+          post_reboot_delay: 90
         when: ansible_system == 'Linux'
