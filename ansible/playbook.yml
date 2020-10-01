@@ -10,6 +10,7 @@
         connection: local
         shell: |
           ssh-keygen -R {{ ansible_host }}
+          ssh-keygen -F {{ ansible_host }} || 
           ssh-keyscan -H {{ ansible_host }} >> ~/.ssh/known_hosts
         ignore_errors: True
         when: 
@@ -109,7 +110,7 @@
 
       - name: "Windows Base Provisioning"
         win_shell: |
-          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope MachinePolicy
+          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
           $admin = [adsi]("WinNT://./{{ windows.local_admin_user }}, user")
           $admin.PSBase.Invoke("SetPassword", "{{ windows.local_admin_password }}")
           Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5 -Force
