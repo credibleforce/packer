@@ -67,18 +67,10 @@
         with_inventory_hostnames:
           - all:!local:!pfsense
 
-      - name: Reboot to apply system changes.
-        shell: "/etc/rc.reboot"
+      - name: Reboot to apply changes
         become: true
-        async: 1
-        poll: 0
-      
-      - name: Wait for reboot to complete
-        wait_for_connection:
-          connect_timeout: 20
-          sleep: 5
-          delay: 5
-          timeout: 300
+        reboot:
+          reboot_timeout: 300
   
   # update all of the hostnames with assigned inventory hostname
   - hosts: all:!local:!pfsense
@@ -159,16 +151,8 @@
           - ansible_system == 'Win32NT'
           - res.reboot_required
 
-      - name: Reboot on Linux
+      - name: Reboot to apply changes
         become: true
-        shell: "shutdown -r -f -t 0"
-        async: 1
-        poll: 0
+        reboot:
+          reboot_timeout: 300
         when: ansible_system == 'Linux'
-        
-      - name: Wait for the reboot to complete on Linux
-        wait_for_connection:
-          connect_timeout: 20
-          sleep: 5
-          delay: 5
-          timeout: 300
