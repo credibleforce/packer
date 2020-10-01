@@ -74,6 +74,12 @@
         with_inventory_hostnames:
           - all:!local:!pfsense
 
+      - name: Add authorized key on Linux
+        authorized_key:
+          user: "{{ whoami.stdout }}"
+          state: present
+          key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      
       - name: Reboot to apply changes
         become: true
         reboot:
