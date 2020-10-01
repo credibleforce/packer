@@ -163,6 +163,15 @@
           state: present
           key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
         when: ansible_system == 'Linux'
+      
+      - name: Setup Ansible
+        become: true
+        shell: |
+          yum install -y ansible
+          pip3 install requests pywinrm
+          ansible-galaxy collection install ansible.windows community.windows
+        when:
+          inventory_hostname in groups['ansible']
 
       - name: Reboot on Windows
         win_reboot:
