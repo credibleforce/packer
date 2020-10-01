@@ -1,2 +1,3 @@
 windows:
+    local_admin_user: "Administrator"
     local_admin_password: "myTempPassword123"
