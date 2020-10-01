@@ -74,6 +74,12 @@
         with_inventory_hostnames:
           - all:!local:!pfsense
 
+      - name: Run whoami without become.
+        command: whoami
+        changed_when: false
+        become: false
+        register: whoami
+
       - name: Add authorized key on Linux
         authorized_key:
           user: "{{ whoami.stdout }}"
