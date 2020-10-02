@@ -216,6 +216,18 @@
             Write-Host $_.GetNetwork().GetName()"changed to category"$_.GetNetwork().GetCategory()
           }
 
+          Set-Item -Path WSMan:\LocalHost\MaxTimeoutms -Value '1800000'
+          Set-Item -Path WSMan:\LocalHost\Shell\MaxMemoryPerShellMB -Value '2048'
+          Set-Item -Path WSMan:\LocalHost\Shell\MaxShellsPerUser -Value '30'
+          Set-Item -Path WSMan:\LocalHost\Shell\MaxConcurrentUsers -Value '30'
+          Set-Item -Path WSMan:\LocalHost\Shell\MaxProcessesPerShell -Value '30'
+          Set-Item -Path WSMan:\LocalHost\Service\AllowUnencrypted -Value 'true'
+          Set-Item -Path WSMan:\LocalHost\Service\Auth\Basic -Value 'false'
+          Set-Item -Path WSMan:\LocalHost\Service\Auth\CredSSP -Value 'true'
+          Set-Item -Path WSMan:\LocalHost\Service\Auth\Negotiate -Value 'true'
+          Set-Item -Path WSMan:\LocalHost\Service\Auth\Kerberos -Value 'true'
+          Set-Item -Path WSMan:\LocalHost\Service\Auth\Certificate -Value 'true'
+
           Enable-PSRemoting -Force
         when: ansible_system == 'Win32NT'
     
