@@ -40,11 +40,11 @@
       - name: Purge existing lab key if present
         delegate_to: localhost
         file: 
-          state: absent
           path: "{{ item }}"
+          state: absent
         with_items:
-          - "~/.ssh/{{ssh_key_filename}}"
-          - "~/.ssh/{{ssh_key_filename}}.pub"
+          - ~/.ssh/{{ssh_key_filename}}
+          - ~/.ssh/{{ssh_key_filename}}.pub
 
       - name: Generate local lab ssh key
         delegate_to: localhost
