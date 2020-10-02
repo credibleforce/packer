@@ -23,8 +23,72 @@
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
 
+  # prep ansible server
+  - hosts: ansible
+    vars:
+      ssh_key_filename: id_lab
+    gather_facts: True
+    tasks:
+      - name: Purge existing lab key if present
+        delegate_to: localhost
+        file: 
+          state: absent
+          path: "{{ item }}"
+        with_items:
+          - "~/.ssh/{{ssh_key_filename}}"
+          - "~/.ssh/{{ssh_key_filename}}.pub"
+
+      - name: Generate local lab ssh key
+        delegate_to: localhost
+        openssh_keypair:
+          path: "~/.ssh/{{ssh_key_filename}}"
+          type: rsa
+          size: 4096
+          state: present
+          force: no
+
+      - name: Add .ssh directory
+        file:
+          path: "~/.ssh"
+          state: directory
+          mode: 0700
+      
+      - name: Add lab SSH private key
+        copy:
+          src: "~/.ssh/{{ ssh_key_filename }}"
+          dest: "~/.ssh/id_rsa"
+          mode: 0600
+
+      - name: Add lab SSH public key
+        copy:
+          src: "~/.ssh/{{ ssh_key_filename }}.pub"
+          dest: "~/.ssh/id_rsa.pub"
+          mode: 0600
+
+      - name: Install Ansible
+        become: true
+        shell: |
+          yum install -y epel-release
+          yum install -y ansible
+          pip3 install requests pywinrm
+          ansible-galaxy collection install ansible.windows community.windows
+
+      - name: Run whoami without become.
+        command: whoami
+        changed_when: false
+        become: false
+        register: whoami
+        
+      - name: Add lab key to authorized key 
+        authorized_key:
+          user: "{{ whoami.stdout }}"
+          state: present
+          key: "{{ lookup('file', '~/.ssh/{{ssh_key_filename}}.pub') }}"
+
   # update pfsense with dhcp static reservation and dns entries for hosts
   - hosts: pfsense
+    vars:
+      ssh_key_filename: id_lab
     gather_facts: False
     tasks:
       - name: show all the hosts matching the pattern
@@ -84,19 +148,20 @@
         authorized_key:
           user: "{{ whoami.stdout }}"
           state: present
-          key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+          key: "{{ lookup('file', '~/.ssh/{{ssh_key_filename}}.pub') }}"
       
       - name: Reboot to apply changes
         become: true
         reboot:
           reboot_timeout: 300
           post_reboot_delay: 90
-  
+
   # update all of the hostnames with assigned inventory hostname
   - hosts: all:!local:!pfsense
-    gather_facts: True
     vars:
+      ssh_key_filename: id_lab
       ansible_timeout: 600
+    gather_facts: True
     environment:
     pre_tasks:
       - name: Windows Variable
@@ -161,17 +226,8 @@
         authorized_key:
           user: "{{ whoami.stdout }}"
           state: present
-          key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+          key: "{{ lookup('file', '~/.ssh/{{ssh_key_filename}}.pub') }}"
         when: ansible_system == 'Linux'
-      
-      - name: Setup Ansible
-        become: true
-        shell: |
-          yum install -y ansible
-          pip3 install requests pywinrm
-          ansible-galaxy collection install ansible.windows community.windows
-        when:
-          inventory_hostname in groups['ansible']
 
       - name: Reboot on Windows
         win_reboot:
