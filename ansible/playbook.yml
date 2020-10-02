@@ -200,6 +200,10 @@
           Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5 -Force
           Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
         when: ansible_system == 'Win32NT'
+
+      - name: "WinRM Configuration"
+        script: ../windows/shared/scripts/enable-winrm.ps1
+        when: ansible_system == 'Win32NT'
     
       - name: "Change the hostname on Windows"
         win_hostname:
