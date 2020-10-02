@@ -6,10 +6,16 @@
       ansible_connection: local
       ansible_python_interpreter: "{{ ansible_playbook_python }}"
     tasks:
+      - name: Run whoami without become.
+        command: whoami
+        changed_when: false
+        become: false
+        register: whoami
+
       - name: Remove any existing host keys
         delegate_to: localhost
         shell: |
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{ansible_host}}"
+          ssh-keygen -f "/home/{{ whoami.stdout }}/.ssh/known_hosts" -R "{{ansible_host}}"
         ignore_errors: yes
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
@@ -30,6 +36,12 @@
           line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + ansible_host) }}"
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
+
+      - name: Configure winrm
+        script: scripts/config-winrm.ps1
+        when: 
+          - hostvars[inventory_hostname].ansible_connection is defined
+          - hostvars[inventory_hostname].ansible_connection == 'winrm'
 
   # prep ansible server
   - hosts: ansible
@@ -73,20 +85,37 @@
           dest: "~/.ssh/id_rsa.pub"
           mode: 0600
 
+      - name: Enable EPEL Repo
+        become: true
+        yum:
+          name:
+            - epel-release
+          
       - name: Install Ansible
         become: true
-        shell: |
-          yum install -y epel-release
-          yum install -y ansible
-          pip3 install requests pywinrm
+        yum:
+          name:
+            - ansible
+          state: present
+        
+      - name: Install Ansible Python Requirements
+        become: true
+        pip:
+          name:
+            - requests
+            - pywinrm
+          state: present
+        
+      - name: Install ansible-galaxy collections
+        shell:
           ansible-galaxy collection install ansible.windows community.windows
-
+      
       - name: Run whoami without become.
         command: whoami
         changed_when: false
         become: false
         register: whoami
-        
+          
       - name: Add lab key to authorized key 
         authorized_key:
           user: "{{ whoami.stdout }}"
@@ -151,6 +180,7 @@
         changed_when: false
         become: false
         register: whoami
+        when: ansible_system == 'Linux'
 
       - name: Add authorized key on Linux
         authorized_key:
@@ -194,41 +224,7 @@
           timeout: 900
 
       - name: "Windows Base Provisioning"
-        win_shell: |
-          $admin = [adsi]("WinNT://./{{ windows.local_admin_user }}, user")
-          $admin.PSBase.Invoke("SetPassword", "{{ windows.local_admin_password }}")
-          
-          # update nuget
-          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5 -Force
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          if([environment]::OSVersion.version.Major -lt 6) { return }
-
-          # You cannot change the network location if you are joined to a domain, so abort
-          if(1,3,4,5 -contains (Get-WmiObject win32_computersystem).DomainRole) { return }
-
-          # Get network connections
-          $networkListManager = [Activator]::CreateInstance([Type]::GetTypeFromCLSID([Guid]"{DCB00C01-570F-4A9B-8D69-199FDBA5723B}"))
-          $connections = $networkListManager.GetNetworkConnections()
-
-          $connections |foreach {
-            Write-Host $_.GetNetwork().GetName()"category was previously set to"$_.GetNetwork().GetCategory()
-            $_.GetNetwork().SetCategory(1)
-            Write-Host $_.GetNetwork().GetName()"changed to category"$_.GetNetwork().GetCategory()
-          }
-
-          Set-Item -Path WSMan:\LocalHost\MaxTimeoutms -Value '1800000'
-          Set-Item -Path WSMan:\LocalHost\Shell\MaxMemoryPerShellMB -Value '2048'
-          Set-Item -Path WSMan:\LocalHost\Shell\MaxShellsPerUser -Value '30'
-          Set-Item -Path WSMan:\LocalHost\Shell\MaxConcurrentUsers -Value '30'
-          Set-Item -Path WSMan:\LocalHost\Shell\MaxProcessesPerShell -Value '30'
-          Set-Item -Path WSMan:\LocalHost\Service\AllowUnencrypted -Value 'true'
-          Set-Item -Path WSMan:\LocalHost\Service\Auth\Basic -Value 'false'
-          Set-Item -Path WSMan:\LocalHost\Service\Auth\CredSSP -Value 'true'
-          Set-Item -Path WSMan:\LocalHost\Service\Auth\Negotiate -Value 'true'
-          Set-Item -Path WSMan:\LocalHost\Service\Auth\Kerberos -Value 'true'
-          Set-Item -Path WSMan:\LocalHost\Service\Auth\Certificate -Value 'true'
-
-          Enable-PSRemoting -Force
+        script: scripts/win-provisioning.ps1
         when: ansible_system == 'Win32NT'
     
       - name: "Change the hostname on Windows"
