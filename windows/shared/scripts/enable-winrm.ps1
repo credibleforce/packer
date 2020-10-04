@@ -101,7 +101,7 @@ Set-Item -Path WSMan:\LocalHost\Shell\MaxShellsPerUser -Value '30'
 Set-Item -Path WSMan:\LocalHost\Shell\MaxConcurrentUsers -Value '30'
 Set-Item -Path WSMan:\LocalHost\Shell\MaxProcessesPerShell -Value '30'
 Set-Item -Path WSMan:\LocalHost\Service\AllowUnencrypted -Value 'true'
-Set-Item -Path WSMan:\LocalHost\Service\Auth\Basic -Value 'false'
+Set-Item -Path WSMan:\LocalHost\Service\Auth\Basic -Value 'true'
 Set-Item -Path WSMan:\LocalHost\Service\Auth\CredSSP -Value 'true'
 Set-Item -Path WSMan:\LocalHost\Service\Auth\Negotiate -Value 'true'
 Set-Item -Path WSMan:\LocalHost\Service\Auth\Kerberos -Value 'true'
@@ -109,9 +109,8 @@ Set-Item -Path WSMan:\LocalHost\Service\Auth\Certificate -Value 'true'
 
 # Configure firewall to allow WinRM HTTP connections.
 Write-Output "Enabling Inbound Firewall Rules for WinRM HTTP"
-Enable-PSRemoting -Force
-#netsh advfirewall firewall add rule name="Windows Remote Management (HTTP-In)" profile="Domain,Private" dir=in localport=5985 protocol=TCP action=allow
-#netsh advfirewall firewall add rule name="Windows Remote Management (HTTP-In-Public)" profile="Public" dir=in localport=5985 protocol=TCP action=allow
+netsh advfirewall firewall add rule name="Windows Remote Management (HTTP-In)" profile="Domain,Private" dir=in localport=5985 protocol=TCP action=allow
+netsh advfirewall firewall add rule name="Windows Remote Management (HTTP-In-Public)" profile="Public" dir=in localport=5985 protocol=TCP action=allow
 
 # Configure firewall to allow WinRM HTTPS connections.
 Write-Output "Enabling Inbound Firewall Rules for WinRM HTTPS"
@@ -173,9 +172,8 @@ if ($token_value -ne 1) {
     New-ItemProperty -Path $token_path -Name $token_prop_name -Value 1 -PropertyType DWORD > $null
 }
 
-#Write-Output "Enable WinRM HTTP Listener"
-#$Hostname = [System.Net.Dns]::GetHostByName((hostname)).HostName.ToUpper()
-#New-Item -Path WSMan:\LocalHost\Listener -Address * -Transport HTTP -Port "5985" -force
+Write-Output "Enable WinRM HTTP Listener"
+New-Item -Path WSMan:\LocalHost\Listener -Address * -Transport HTTP -Port "5985" -force
 
 Write-Output "Enable WinRM HTTPS Listener"
 $Hostname = [System.Net.Dns]::GetHostByName((hostname)).HostName.ToUpper()

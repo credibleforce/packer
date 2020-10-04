@@ -31,9 +31,9 @@
       "shutdown_command": "a:/sysprep.bat",
       "shutdown_timeout": "15m",
       "skip_compaction": true,
-      "tools_upload_flavor": "windows",
+      
       "type": "vmware-iso",
-      "output_directory": "builds",
+      
       "version": 14,
       "vm_name": "{{user `vm_name`}}",
       "vmx_data": {
@@ -55,9 +55,9 @@
     [
       {
         "keep_input_artifact": false,
-        "output": "{{user `vm_name`}}_{{.Provider}}.box",
+        "output": "builds/{{.Provider}}-{{user `vm_name`}}.box",
         "type": "vagrant",
-        "vagrantfile_template": "vagrantfile-{{user `vm_name`}}.template"
+        "vagrantfile_template": "Vagrantfile"
       },
       {
         "inline": [
@@ -133,8 +133,7 @@
     },
     {
       "scripts": [
-        "../shared/scripts/set-powerplan.ps1",
-        "../shared/scripts/docker/disable-windows-defender.ps1"
+        "../shared/scripts/set-powerplan.ps1"
       ],
       "type": "powershell"
     },
@@ -153,7 +152,7 @@
     }
   ],
   "variables": {
-    "autounattend": "./answer_files/10/Autounattend.xml",
+    "autounattend": "../shared/answer_files/10/Autounattend.xml",
     "disk_size": "61440",
     "disk_type_id": "1",
     "memory": "2048",

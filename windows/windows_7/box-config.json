@@ -25,7 +25,7 @@
       "memory": "{{user `memory`}}",
       "shutdown_command": "c:/windows/system32/sysprep/sysprep.exe /generalize /oobe /quiet /shutdown /unattend:a:/unattend.xml",
       "type": "vmware-iso",
-      "output_directory": "builds",
+      
       "version": 14,
       "vm_name": "{{user `vm_name`}}",
       "vmx_data": {
@@ -46,9 +46,9 @@
     [
       {
         "keep_input_artifact": false,
-        "output": "{{user `vm_name`}}_{{.Provider}}.box",
+        "output": "builds/{{.Provider}}-{{user `vm_name`}}.box",
         "type": "vagrant",
-        "vagrantfile_template": "vagrantfile-{{user `vm_name`}}.template"
+        "vagrantfile_template": "Vagrantfile"
       }
     ]
   ],
