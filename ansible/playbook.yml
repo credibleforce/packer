@@ -210,6 +210,7 @@
 
       - name: "Windows Base Provisioning"
         win_shell: |
+          Get-LocalUser -Name "Administrator" | Enable-LocalUser
           $admin = [adsi]("WinNT://./{{ windows.local_admin_user }}, user")
           $admin.PSBase.Invoke("SetPassword", "{{ windows.local_admin_password }}")
           
