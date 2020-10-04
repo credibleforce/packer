@@ -1,183 +1,183 @@
 ---
   # update the list of known_hosts so ssh will not fail to connect
-  # - hosts: all
-  #   gather_facts: False
-  #   vars:
-  #     ansible_connection: local
-  #     ansible_python_interpreter: "{{ ansible_playbook_python }}"
-  #   tasks:
-  #     - name: Run whoami without become.
-  #       delegate_to: localhost
-  #       command: whoami
-  #       changed_when: false
-  #       become: false
-  #       register: whoami
+  - hosts: all
+    gather_facts: False
+    vars:
+      ansible_connection: local
+      ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    tasks:
+      - name: Run whoami without become.
+        delegate_to: localhost
+        command: whoami
+        changed_when: false
+        become: false
+        register: whoami
 
-  #     - name: Remove any existing host keys
-  #       delegate_to: localhost
-  #       shell: |
-  #         ssh-keygen -f "/home/{{ whoami.stdout }}/.ssh/known_hosts" -R "{{ansible_host}}"
-  #       ignore_errors: yes
-  #       when: 
-  #         - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
+      - name: Remove any existing host keys
+        delegate_to: localhost
+        shell: |
+          ssh-keygen -f "/home/{{ whoami.stdout }}/.ssh/known_hosts" -R "{{ansible_host}}"
+        ignore_errors: yes
+        when: 
+          - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
       
-  #     - name: get port, default 22
-  #       delegate_to: localhost
-  #       set_fact:
-  #         ansible_ssh_port: "{{ hostvars[inventory_hostname]['ansible_ssh_port'] | default('22') }}"
-  #       when: 
-  #         - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
+      - name: get port, default 22
+        delegate_to: localhost
+        set_fact:
+          ansible_ssh_port: "{{ hostvars[inventory_hostname]['ansible_ssh_port'] | default('22') }}"
+        when: 
+          - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
       
-  #     - name: Ensure ssh host key known
-  #       delegate_to: localhost
-  #       lineinfile:
-  #         dest: ~/.ssh/known_hosts
-  #         create: yes
-  #         state: present
-  #         line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + ansible_host) }}"
-  #       when: 
-  #         - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
+      - name: Ensure ssh host key known
+        delegate_to: localhost
+        lineinfile:
+          dest: ~/.ssh/known_hosts
+          create: yes
+          state: present
+          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + ansible_host) }}"
+        when: 
+          - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
 
   # prep ansible server
-  # - hosts: ansible
-  #   vars:
-  #     ssh_key_filename: id_lab
-  #   gather_facts: True
-  #   tasks:
-  #     - name: Purge existing lab key if present
-  #       delegate_to: localhost
-  #       file: 
-  #         path: "{{ item }}"
-  #         state: absent
-  #       with_items:
-  #         - ~/.ssh/{{ssh_key_filename}}
-  #         - ~/.ssh/{{ssh_key_filename}}.pub
+  - hosts: ansible
+    vars:
+      ssh_key_filename: id_lab
+    gather_facts: True
+    tasks:
+      - name: Purge existing lab key if present
+        delegate_to: localhost
+        file: 
+          path: "{{ item }}"
+          state: absent
+        with_items:
+          - ~/.ssh/{{ssh_key_filename}}
+          - ~/.ssh/{{ssh_key_filename}}.pub
 
-  #     - name: Generate local lab ssh key
-  #       delegate_to: localhost
-  #       openssh_keypair:
-  #         path: "~/.ssh/{{ssh_key_filename}}"
-  #         type: rsa
-  #         size: 4096
-  #         state: present
-  #         force: yes
+      - name: Generate local lab ssh key
+        delegate_to: localhost
+        openssh_keypair:
+          path: "~/.ssh/{{ssh_key_filename}}"
+          type: rsa
+          size: 4096
+          state: present
+          force: yes
 
-  #     - name: Add .ssh directory
-  #       file:
-  #         path: "~/.ssh"
-  #         state: directory
-  #         mode: 0700
+      - name: Add .ssh directory
+        file:
+          path: "~/.ssh"
+          state: directory
+          mode: 0700
       
-  #     - name: Add lab SSH private key
-  #       copy:
-  #         src: "~/.ssh/{{ ssh_key_filename }}"
-  #         dest: "~/.ssh/id_rsa"
-  #         mode: 0600
+      - name: Add lab SSH private key
+        copy:
+          src: "~/.ssh/{{ ssh_key_filename }}"
+          dest: "~/.ssh/id_rsa"
+          mode: 0600
 
-  #     - name: Add lab SSH public key
-  #       copy:
-  #         src: "~/.ssh/{{ ssh_key_filename }}.pub"
-  #         dest: "~/.ssh/id_rsa.pub"
-  #         mode: 0600
+      - name: Add lab SSH public key
+        copy:
+          src: "~/.ssh/{{ ssh_key_filename }}.pub"
+          dest: "~/.ssh/id_rsa.pub"
+          mode: 0600
 
-  #     - name: Enable EPEL Repo
-  #       become: true
-  #       yum:
-  #         name:
-  #           - epel-release
+      - name: Enable EPEL Repo
+        become: true
+        yum:
+          name:
+            - epel-release
           
-  #     - name: Install Ansible
-  #       become: true
-  #       yum:
-  #         name:
-  #           - ansible
-  #         state: present
+      - name: Install Ansible
+        become: true
+        yum:
+          name:
+            - ansible
+          state: present
         
-  #     - name: Install Ansible Python Requirements
-  #       become: true
-  #       pip:
-  #         name:
-  #           - requests
-  #           - pywinrm
-  #         state: present
+      - name: Install Ansible Python Requirements
+        become: true
+        pip:
+          name:
+            - requests
+            - pywinrm
+          state: present
         
-  #     - name: Install ansible-galaxy collections
-  #       shell:
-  #         ansible-galaxy collection install ansible.windows community.windows
+      - name: Install ansible-galaxy collections
+        shell:
+          ansible-galaxy collection install ansible.windows community.windows
       
-  #     - name: Run whoami without become.
-  #       command: whoami
-  #       changed_when: false
-  #       become: false
-  #       register: whoami
+      - name: Run whoami without become.
+        command: whoami
+        changed_when: false
+        become: false
+        register: whoami
           
-  #     - name: Add lab key to authorized key 
-  #       authorized_key:
-  #         user: "{{ whoami.stdout }}"
-  #         state: present
-  #         key: "{{ lookup('file', '~/.ssh/{{ssh_key_filename}}.pub') }}"
+      - name: Add lab key to authorized key 
+        authorized_key:
+          user: "{{ whoami.stdout }}"
+          state: present
+          key: "{{ lookup('file', '~/.ssh/{{ssh_key_filename}}.pub') }}"
 
   # update pfsense with dhcp static reservation and dns entries for hosts
-  # - hosts: pfsense
-  #   vars:
-  #     ssh_key_filename: id_lab
-  #   gather_facts: False
-  #   tasks:
-  #     - name: Remove any existing static dhcp mappings
-  #       become: true
-  #       xml:
-  #         path: /conf/config.xml
-  #         xpath: /pfsense/dhcpd/lan/staticmap
-  #         state: absent
+  - hosts: pfsense
+    vars:
+      ssh_key_filename: id_lab
+    gather_facts: False
+    tasks:
+      - name: Remove any existing static dhcp mappings
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/dhcpd/lan/staticmap
+          state: absent
 
-  #     - name: Add static mappings for all hosts
-  #       become: true
-  #       xml:
-  #         path: /conf/config.xml
-  #         xpath: /pfsense/dhcpd/lan
-  #         input_type: xml
-  #         pretty_print: yes
-  #         add_children:
-  #           - "<staticmap><mac>{{ hostvars[item]['prod_mac'] }}</mac><cid>{{ hostvars[item]['inventory_hostname'] }}</cid><ipaddr>{{ hostvars[item]['prod_ip'] }}</ipaddr><hostname>{{ hostvars[item]['inventory_hostname'] }}</hostname><descr><![CDATA[{{ hostvars[item]['inventory_hostname'] }}]]></descr><arp_table_static_entry></arp_table_static_entry><filename></filename><rootpath></rootpath><defaultleasetime></defaultleasetime><maxleasetime></maxleasetime><gateway></gateway><domain></domain><domainsearchlist></domainsearchlist><ddnsdomain></ddnsdomain><ddnsdomainprimary></ddnsdomainprimary><ddnsdomainkeyname></ddnsdomainkeyname><ddnsdomainkey></ddnsdomainkey><tftp></tftp><ldap></ldap></staticmap>"
-  #       with_inventory_hostnames:
-  #         - all:!local:!pfsense      
+      - name: Add static mappings for all hosts
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/dhcpd/lan
+          input_type: xml
+          pretty_print: yes
+          add_children:
+            - "<staticmap><mac>{{ hostvars[item]['prod_mac'] }}</mac><cid>{{ hostvars[item]['inventory_hostname'] }}</cid><ipaddr>{{ hostvars[item]['prod_ip'] }}</ipaddr><hostname>{{ hostvars[item]['inventory_hostname'] }}</hostname><descr><![CDATA[{{ hostvars[item]['inventory_hostname'] }}]]></descr><arp_table_static_entry></arp_table_static_entry><filename></filename><rootpath></rootpath><defaultleasetime></defaultleasetime><maxleasetime></maxleasetime><gateway></gateway><domain></domain><domainsearchlist></domainsearchlist><ddnsdomain></ddnsdomain><ddnsdomainprimary></ddnsdomainprimary><ddnsdomainkeyname></ddnsdomainkeyname><ddnsdomainkey></ddnsdomainkey><tftp></tftp><ldap></ldap></staticmap>"
+        with_inventory_hostnames:
+          - all:!local:!pfsense      
 
-  #     - name: Remove any existing dns entries mappings
-  #       become: true
-  #       xml:
-  #         path: /conf/config.xml
-  #         xpath: /pfsense/unbound/hosts
-  #         state: absent
+      - name: Remove any existing dns entries mappings
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/unbound/hosts
+          state: absent
 
-  #     - name: Add dns entry for all hosts
-  #       become: true
-  #       xml:
-  #         path: /conf/config.xml
-  #         xpath: /pfsense/unbound
-  #         input_type: xml
-  #         pretty_print: yes
-  #         add_children:
-  #           "<hosts><host>{{ hostvars[item]['inventory_hostname'] }}</host><domain>lab.local</domain><ip>{{ hostvars[item]['prod_ip'] }}</ip><descr></descr><aliases></aliases></hosts>"
-  #       with_inventory_hostnames:
-  #         - all:!local:!pfsense
+      - name: Add dns entry for all hosts
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/unbound
+          input_type: xml
+          pretty_print: yes
+          add_children:
+            "<hosts><host>{{ hostvars[item]['inventory_hostname'] }}</host><domain>lab.local</domain><ip>{{ hostvars[item]['prod_ip'] }}</ip><descr></descr><aliases></aliases></hosts>"
+        with_inventory_hostnames:
+          - all:!local:!pfsense
 
-  #     - name: Run whoami without become.
-  #       command: whoami
-  #       changed_when: false
-  #       become: false
-  #       register: whoami
+      - name: Run whoami without become.
+        command: whoami
+        changed_when: false
+        become: false
+        register: whoami
 
-  #     - name: Add authorized key on Linux
-  #       authorized_key:
-  #         user: "{{ whoami.stdout }}"
-  #         state: present
-  #         key: "{{ lookup('file', '~/.ssh/{{ssh_key_filename}}.pub') }}"
+      - name: Add authorized key on Linux
+        authorized_key:
+          user: "{{ whoami.stdout }}"
+          state: present
+          key: "{{ lookup('file', '~/.ssh/{{ssh_key_filename}}.pub') }}"
       
-  #     - name: Reboot to apply changes
-  #       become: true
-  #       reboot:
-  #         reboot_timeout: 300
-  #         post_reboot_delay: 90
+      - name: Reboot to apply changes
+        become: true
+        reboot:
+          reboot_timeout: 300
+          post_reboot_delay: 90
 
   # update all of the hostnames with assigned inventory hostname
   - hosts: all:!local:!pfsense
