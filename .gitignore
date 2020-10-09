@@ -4,6 +4,7 @@ iso/*
 builds/*
 !builds/README.md
 packer_cache/
+output-*/
 *.box
 *.ova
 *.iso
