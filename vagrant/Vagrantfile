@@ -6,18 +6,18 @@ require 'yaml'
 
 Vagrant.require_version ">= 1.6.2"
 
-private_key_path = File.join(Dir.home, ".ssh", "id_rsa")
-public_key_path = File.join(Dir.home, ".ssh", "id_rsa.pub")
-insecure_key_path = File.join(Dir.home, ".vagrant.d", "insecure_private_key")
-private_key = IO.read(private_key_path)
-public_key = IO.read(public_key_path)
+$private_key_path = File.join(Dir.home, ".ssh", "id_rsa")
+$public_key_path = File.join(Dir.home, ".ssh", "id_rsa.pub")
+$insecure_key_path = File.join(Dir.home, ".vagrant.d", "insecure_private_key")
+$private_key = IO.read($private_key_path)
+$public_key = IO.read($public_key_path)
 
-ANSIBLE_DIR = File.join(File.dirname(__FILE__), "..","ansible")
-INVENTORY_FILE = File.join(ANSIBLE_DIR, "hosts","inventory.yml")
-PLAYBOOK_FILE = File.join(ANSIBLE_DIR, "playbook.yml")
+$ANSIBLE_DIR = File.join(File.dirname(__FILE__), "..","ansible")
+$INVENTORY_FILE = File.join($ANSIBLE_DIR, "hosts","inventory.yml")
+$PLAYBOOK_FILE = File.join($ANSIBLE_DIR, "playbook.yml")
 
-if File.exists?(INVENTORY_FILE)
-    File.delete(INVENTORY_FILE)
+if File.exists?($INVENTORY_FILE)
+    File.delete($INVENTORY_FILE)
 end
 
 # HOST HASHTABLES #
@@ -550,11 +550,11 @@ Vagrant.configure("2") do |config|
             end
             
             $ansible_inventory['all']['children']['lab']['children'] = $roles
-            File.write(INVENTORY_FILE, $ansible_inventory.to_yaml, mode: "a")
+            File.write($INVENTORY_FILE, $ansible_inventory.to_yaml, mode: "a")
 
             # set hostname and ssh key based auth
             puts("Running post build configuration...")
-            result=`cd #{ANSIBLE_DIR} && ansible-playbook #{PLAYBOOK_FILE} -i #{INVENTORY_FILE} -v`
+            result=`cd #{$ANSIBLE_DIR} && ansible-playbook #{$PLAYBOOK_FILE} -i #{$INVENTORY_FILE} -v`
             puts(result)
             puts("Post build configuration complete.")
 
