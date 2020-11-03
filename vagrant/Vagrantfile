@@ -21,24 +21,24 @@ if File.exists?(INVENTORY_FILE)
 end
 
 # HOST HASHTABLES #
-win16_hosts_override =                  [
+$win16_hosts_override =                  [
                                             # win16 server
                                             {"name"=>"win16-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
                                             {"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
-                                            {"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
+                                            #{"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
                                         ]
 
-win10_hosts_override =                  [
+$win10_hosts_override =                  [
                                             # win10 desktop
                                             {"name"=>"win10-dsk1","prod_ip"=>"172.21.0.20","role"=>"member_server" },
                                         ]
 
-win7_hosts_override =                   [
+$win7_hosts_override =                   [
                                             # win7 desktop
                                             {"name"=>"win7-dsk1","prod_ip"=>"172.21.0.21","role"=>"member_server" },
                                         ]
 
-centos_hosts_override =                 [
+$centos_hosts_override =                 [
                                             # ansible
                                             {"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
                                             
@@ -54,40 +54,40 @@ centos_hosts_override =                 [
                                             # {"name"=>"splk-idx1","prod_ip"=>"172.21.0.48","role"=>"splunk_indexer","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-idx2","prod_ip"=>"172.21.0.49","role"=>"splunk_indexer","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-hf1","prod_ip"=>"172.21.0.50","role"=>"splunk_heavy_forwarder","custom_security_group"=>"splunk_security_group"},
-                                            {"name"=>"splk-uf1","prod_ip"=>"172.21.0.51","role"=>"splunk_universal_forwarder,suricata,syslog-collector","custom_security_group"=>"splunk_security_group"},
+                                            #{"name"=>"splk-uf1","prod_ip"=>"172.21.0.51","role"=>"splunk_universal_forwarder,suricata,syslog-collector","custom_security_group"=>"splunk_security_group"},
                                         ]
-kali_hosts_override =                   [
+$kali_hosts_override =                   [
                                             # kali
                                             {"name"=>"kali-pen1","prod_ip"=>"172.21.0.60","role"=>"kali" },
                                         ]
 
-pfsense_hosts_override =                   [
+$pfsense_hosts_override =                   [
                                             # pfsense
                                             {"name"=>"pfsense-gw1","prod_ip"=>"172.21.0.254","role"=>"pfsense" },
                                         ]
 # HOST HASHTABLES #
-centos_extra_vars = {
+$centos_extra_vars = {
     "ansible_ssh_port"=>"22",
     "ansible_ssh_user"=>"vagrant",
     "ansible_ssh_pass"=>"vagrant",
     "ansible_become_password"=>"vagrant",
 }
 
-pfsense_extra_vars = {
+$pfsense_extra_vars = {
     "ansible_ssh_port"=>"22",
     "ansible_ssh_user"=>"vagrant",
     "ansible_ssh_pass"=>"vagrant",
     "ansible_become_password"=>"vagrant",
 }
 
-kali_extra_vars = {
+$kali_extra_vars = {
     "ansible_ssh_port"=>"22",
     "ansible_ssh_user"=>"kali",
     "ansible_ssh_pass"=>"kali",
     "ansible_become_password"=>"kali",
 }
 
-windows_extra_vars = {
+$windows_extra_vars = {
     "ansible_connection"=>"winrm",
     "ansible_ssh_port"=>"5986",
     "ansible_ssh_user"=>"vagrant",
@@ -99,7 +99,7 @@ windows_extra_vars = {
     "ansible_winrm_read_timeout_sec"=>"600",
 }
 
-ansible_inventory = { 
+$ansible_inventory = { 
     "all" => { 
         "children" => { 
             "local" => {
@@ -120,21 +120,33 @@ ansible_inventory = {
     } 
 }
 
-roles = {}
+$roles = {}
 
 Vagrant.configure("2") do |config|
-    pfsense_config = []
-    pfsense_count = pfsense_hosts_override.count
-    pfsense_counter = 0
-    pfsense_hosts_override.each do |i|
+    # global variables
+    $pfsense_count = $pfsense_hosts_override.count
+    $pfsense_counter = 0
+    $kali_count = $kali_hosts_override.count
+    $kali_counter = 0
+    $centos_count = $centos_hosts_override.count
+    $centos_counter = 0
+    $win16_count = $win16_hosts_override.count
+    $win16_counter = 0
+    $win10_count = $win10_hosts_override.count
+    $win10_counter = 0
+    $win7_count = $win7_hosts_override.count
+    $win7_counter = 0
+    
+    $pfsense_config = []
+    $pfsense_hosts_override.each do |i|
         config.vm.define i['name'] do |pfsense|
             pfsense.ssh.insert_key = false
             pfsense.vm.boot_timeout = 600
             pfsense.vm.box = "vmware-pfsense"
-            pfsense.ssh.username = pfsense_extra_vars['ansible_ssh_user']
-            pfsense.ssh.password = pfsense_extra_vars['ansible_ssh_pass']
+            pfsense.ssh.username = $pfsense_extra_vars['ansible_ssh_user']
+            pfsense.ssh.password = $pfsense_extra_vars['ansible_ssh_pass']
             pfsense.vm.synced_folder ".", "/vagrant", disabled: true
-            pfsense.vm.provider :vmware_workstation do |v, override|
+            pfsense.vm.provider :vmware_desktop do |v, override|
                 v.gui = true
                 v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "1024"
@@ -143,8 +155,8 @@ Vagrant.configure("2") do |config|
                 v.vmx["ethernet0.pcislotnumber"] = "32"
                 v.vmx["ethernet1.virtualDev"] = "e1000"
                 v.vmx["ethernet1.connectiontype"] = "custom"
-                v.vmx["ethernet1.vnet"] = "/dev/vmnet3"
-                v.vmx["ethernet1.pciSlotNumber"] = "160"
+                v.vmx["ethernet1.vnet"] = "vmnet3"
+                v.vmx["ethernet1.pciSlotNumber"] = "33"
                 v.vmx["ethernet1.present"] = "TRUE"
                 v.vmx["ethernet1.wakeOnPcktRcv"] = "FALSE"
                 v.vmx["ethernet1.noPromisc"] = "FALSE"
@@ -153,7 +165,7 @@ Vagrant.configure("2") do |config|
             pfsense.trigger.after :up do |trigger|
                 trigger.ruby do |env,machine|
                     puts("Machine id: #{machine.id}")
-                    pfsense_config.push(machine.id)
+                    $pfsense_config.push(machine.id)
                     mac=`grep "ethernet0.generatedAddress = " "#{machine.id}" | awk -F " = " '{print $2}' | sed 's/"//g'`
                     ip=`vmrun getGuestIPAddress "#{machine.id}" -wait`
                     if $?.exitstatus == 0
@@ -166,27 +178,27 @@ Vagrant.configure("2") do |config|
                         ip=`cat /etc/vmware/vmnet8/dhcpd/dhcpd.leases |  egrep -o 'lease.*{|ethernet.*;' | awk '{print $2}' | xargs -n 2 | cut -d ';' -f 1 | grep "#{mac}" | tail -1 | awk '{print $1}'`
                         puts("Found ip address in dhcp leases: #{ip}")
                     end
-                    host_hash = pfsense_hosts_override.find { |h| h['name'] == i['name'] }
+                    host_hash = $pfsense_hosts_override.find { |h| h['name'] == i['name'] }
                     host_hash['ansible_host'] = ip.strip
                     host_hash['prod_mac'] = mac.strip
-                    pfsense_counter+=1
+                    $pfsense_counter+=1
+                    complete_build
                 end
             end
         end
     end
 
-    kali_config = []
-    kali_count = kali_hosts_override.count
-    kali_counter = 0
-    kali_hosts_override.each do |i|
+    $kali_config = []
+    $kali_hosts_override.each do |i|
         config.vm.define i['name'] do |kali|
             kali.ssh.insert_key = false
             kali.vm.boot_timeout = 600
             kali.vm.box = "vmware-kali"
-            kali.ssh.username = kali_extra_vars['ansible_ssh_user']
-            kali.ssh.password = kali_extra_vars['ansible_ssh_pass']
+            kali.vm.guest = :windows
+            kali.ssh.username = $kali_extra_vars['ansible_ssh_user']
+            kali.ssh.password = $kali_extra_vars['ansible_ssh_pass']
             kali.vm.synced_folder ".", "/vagrant", disabled: true
-            kali.vm.provider :vmware_workstation do |v, override|
+            kali.vm.provider :vmware_desktop do |v, override|
                 v.gui = true
                 v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "1024"
@@ -197,7 +209,7 @@ Vagrant.configure("2") do |config|
             kali.trigger.after :up do |trigger|
                 trigger.ruby do |env,machine|
                     puts("Machine id: #{machine.id}")
-                    kali_config.push(machine.id)
+                    $kali_config.push(machine.id)
                     mac=`grep "ethernet0.generatedAddress = " "#{machine.id}" | awk -F " = " '{print $2}' | sed 's/"//g'`
                     ip=`vmrun getGuestIPAddress "#{machine.id}" -wait`
                     if $?.exitstatus == 0
@@ -210,27 +222,26 @@ Vagrant.configure("2") do |config|
                         ip=`cat /etc/vmware/vmnet8/dhcpd/dhcpd.leases |  egrep -o 'lease.*{|ethernet.*;' | awk '{print $2}' | xargs -n 2 | cut -d ';' -f 1 | grep "#{mac}" | tail -1 | awk '{print $1}'`
                         puts("Found ip address in dhcp leases: #{ip}")
                     end
-                    host_hash = kali_hosts_override.find { |h| h['name'] == i['name'] }
+                    host_hash = $kali_hosts_override.find { |h| h['name'] == i['name'] }
                     host_hash['ansible_host'] = ip.strip
                     host_hash['prod_mac'] = mac.strip
-                    kali_counter+=1
+                    $kali_counter+=1
+                    complete_build
                 end
             end
         end
     end
 
-    centos_config = []
-    centos_count = centos_hosts_override.count
-    centos_counter = 0
-    centos_hosts_override.each do |i|
+    $centos_config = []
+    $centos_hosts_override.each do |i|
         config.vm.define i['name'] do |centos|
             centos.ssh.insert_key = false
             centos.vm.boot_timeout = 600
             centos.vm.box = "vmware-centos8"
-            centos.ssh.username = centos_extra_vars['ansible_ssh_user']
-            centos.ssh.password = centos_extra_vars['ansible_ssh_pass']
+            centos.ssh.username = $centos_extra_vars['ansible_ssh_user']
+            centos.ssh.password = $centos_extra_vars['ansible_ssh_pass']
             centos.vm.synced_folder ".", "/vagrant", disabled: true
-            centos.vm.provider :vmware_workstation do |v, override|
+            centos.vm.provider :vmware_desktop do |v, override|
                 v.gui = true
                 v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "1024"
@@ -242,7 +253,7 @@ Vagrant.configure("2") do |config|
             centos.trigger.after :up do |trigger|
                 trigger.ruby do |env,machine|
                     puts("Machine id: #{machine.id}")
-                    centos_config.push(machine.id)
+                    $centos_config.push(machine.id)
                     mac=`grep "ethernet0.generatedAddress = " "#{machine.id}" | awk -F " = " '{print $2}' | sed 's/"//g'`
                     ip=`vmrun getGuestIPAddress "#{machine.id}" -wait`
                     if $?.exitstatus == 0
@@ -255,34 +266,33 @@ Vagrant.configure("2") do |config|
                         ip=`cat /etc/vmware/vmnet8/dhcpd/dhcpd.leases |  egrep -o 'lease.*{|ethernet.*;' | awk '{print $2}' | xargs -n 2 | cut -d ';' -f 1 | grep "#{mac}" | tail -1 | awk '{print $1}'`
                         puts("Found ip address in dhcp leases: #{ip}")
                     end
-                    host_hash = centos_hosts_override.find { |h| h['name'] == i['name'] }
+                    host_hash = $centos_hosts_override.find { |h| h['name'] == i['name'] }
                     host_hash['ansible_host'] = ip.strip
                     host_hash['prod_mac'] = mac.strip
-                    centos_counter+=1
+                    $centos_counter+=1
+                    complete_build
                 end
             end
         end
     end
 
-    win16_config = []
-    win16_count = win16_hosts_override.count
-    win16_counter = 0
-    win16_hosts_override.each.each do |i|
+    $win16_config = []
+    $win16_hosts_override.each.each do |i|
         config.vm.define i['name'] do |win16|
             win16.vm.boot_timeout = 900
             win16.winrm.retry_delay = 5
             win16.winrm.max_tries = 50
             win16.vm.box = "vmware-windows_2016"
-            win16.winrm.transport = windows_extra_vars['ansible_winrm_scheme']=="https" ? :ssl : :basic
-            win16.winrm.ssl_peer_verification = windows_extra_vars['ansible_winrm_server_cert_validation']=="ignore" ? false : true
-            win16.winrm.port = windows_extra_vars['ansible_ssh_port']
-            win16.vm.communicator = windows_extra_vars['ansible_connection']
-            win16.winrm.username = windows_extra_vars['ansible_ssh_user']
-            win16.winrm.password = windows_extra_vars['ansible_ssh_pass']
+            win16.winrm.transport = $windows_extra_vars['ansible_winrm_scheme']=="https" ? :ssl : :basic
+            win16.winrm.ssl_peer_verification = $windows_extra_vars['ansible_winrm_server_cert_validation']=="ignore" ? false : true
+            win16.winrm.port = $windows_extra_vars['ansible_ssh_port']
+            win16.vm.communicator = $windows_extra_vars['ansible_connection']
+            win16.winrm.username = $windows_extra_vars['ansible_ssh_user']
+            win16.winrm.password = $windows_extra_vars['ansible_ssh_pass']
             win16.vm.guest = :windows
             win16.windows.halt_timeout = 15       
             win16.vm.synced_folder ".", "/vagrant", disabled: true
-            win16.vm.provider :vmware_workstation do |v, override|
+            win16.vm.provider :vmware_desktop do |v, override|
                 v.gui = true
                 v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "1024"
@@ -300,7 +310,7 @@ Vagrant.configure("2") do |config|
             win16.trigger.after :up do |trigger|
                 trigger.ruby do |env,machine|
                     puts("Machine id: #{machine.id}")
-                    win16_config.push(machine.id)
+                    $win16_config.push(machine.id)
                     mac=`grep "ethernet0.generatedAddress = " "#{machine.id}" | awk -F " = " '{print $2}' | sed 's/"//g'`
                     ip=`vmrun getGuestIPAddress "#{machine.id}" -wait`
                     if $?.exitstatus == 0
@@ -312,34 +322,33 @@ Vagrant.configure("2") do |config|
                         ip=`cat /etc/vmware/vmnet8/dhcpd/dhcpd.leases |  egrep -o 'lease.*{|ethernet.*;' | awk '{print $2}' | xargs -n 2 | cut -d ';' -f 1 | grep "#{mac}" | tail -1 | awk '{print $1}'`
                         puts("Found ip address in dhcp leases: #{ip}")
                     end
-                    host_hash = win16_hosts_override.find { |h| h['name'] == i['name'] }
+                    host_hash = $win16_hosts_override.find { |h| h['name'] == i['name'] }
                     host_hash['ansible_host'] = ip.strip
                     host_hash['prod_mac'] = mac.strip
-                    win16_counter+=1
+                    $win16_counter+=1
+                    complete_build
                 end
             end
         end
     end
 
-    win10_config = []
-    win10_count = win10_hosts_override.count
-    win10_counter = 0
-    win10_hosts_override.each.each do |i|
+    $win10_config = []
+    $win10_hosts_override.each.each do |i|
         config.vm.define i['name'] do |win10|
             win10.vm.boot_timeout = 900
             win10.winrm.retry_delay = 5
             win10.winrm.max_tries = 50
             win10.vm.box = "vmware-windows_10"
-            win10.winrm.transport = windows_extra_vars['ansible_winrm_scheme']=="https" ? :ssl : :basic
-            win10.winrm.ssl_peer_verification = windows_extra_vars['ansible_winrm_server_cert_validation']=="ignore" ? false : true
-            win10.winrm.port = windows_extra_vars['ansible_ssh_port']
-            win10.vm.communicator = windows_extra_vars['ansible_connection']
-            win10.winrm.username = windows_extra_vars['ansible_ssh_user']
-            win10.winrm.password = windows_extra_vars['ansible_ssh_pass']
+            win10.winrm.transport = $windows_extra_vars['ansible_winrm_scheme']=="https" ? :ssl : :basic
+            win10.winrm.ssl_peer_verification = $windows_extra_vars['ansible_winrm_server_cert_validation']=="ignore" ? false : true
+            win10.winrm.port = $windows_extra_vars['ansible_ssh_port']
+            win10.vm.communicator = $windows_extra_vars['ansible_connection']
+            win10.winrm.username = $windows_extra_vars['ansible_ssh_user']
+            win10.winrm.password = $windows_extra_vars['ansible_ssh_pass']
             win10.vm.guest = :windows
             win10.windows.halt_timeout = 15       
             win10.vm.synced_folder ".", "/vagrant", disabled: true
-            win10.vm.provider :vmware_workstation do |v, override|
+            win10.vm.provider :vmware_desktop do |v, override|
                 v.gui = true
                 v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "1024"
@@ -358,7 +367,7 @@ Vagrant.configure("2") do |config|
             win10.trigger.after :up do |trigger|
                 trigger.ruby do |env,machine|
                     puts("Machine id: #{machine.id}")
-                    win10_config.push(machine.id)
+                    $win10_config.push(machine.id)
                     mac=`grep "ethernet0.generatedAddress = " "#{machine.id}" | awk -F " = " '{print $2}' | sed 's/"//g'`
                     ip=`vmrun getGuestIPAddress "#{machine.id}" -wait`
                     if $?.exitstatus == 0
@@ -370,34 +379,33 @@ Vagrant.configure("2") do |config|
                         ip=`cat /etc/vmware/vmnet8/dhcpd/dhcpd.leases |  egrep -o 'lease.*{|ethernet.*;' | awk '{print $2}' | xargs -n 2 | cut -d ';' -f 1 | grep "#{mac}" | tail -1 | awk '{print $1}'`
                         puts("Found ip address in dhcp leases: #{ip}")
                     end
-                    host_hash = win10_hosts_override.find { |h| h['name'] == i['name'] }
+                    host_hash = $win10_hosts_override.find { |h| h['name'] == i['name'] }
                     host_hash['ansible_host'] = ip.strip
                     host_hash['prod_mac'] = mac.strip
-                    win10_counter+=1
+                    $win10_counter+=1
+                    complete_build
                 end
             end
         end
     end
-
-    win7_config = []
-    win7_count = win7_hosts_override.count
-    win7_counter = 0
-    win7_hosts_override.each do |i|
+    
+    $win7_config = []
+    $win7_hosts_override.each do |i|
         config.vm.define i['name'] do |win7|
             win7.vm.boot_timeout = 900
             win7.winrm.retry_delay = 5
             win7.winrm.max_tries = 50
             win7.vm.box = "vmware-windows_7"
-            win7.winrm.transport = windows_extra_vars['ansible_winrm_scheme']=="https" ? :ssl : :basic
-            win7.winrm.ssl_peer_verification = windows_extra_vars['ansible_winrm_server_cert_validation']=="ignore" ? false : true
-            win7.winrm.port = windows_extra_vars['ansible_ssh_port']
-            win7.vm.communicator = windows_extra_vars['ansible_connection']
-            win7.winrm.username = windows_extra_vars['ansible_ssh_user']
-            win7.winrm.password = windows_extra_vars['ansible_ssh_pass']
+            win7.winrm.transport = $windows_extra_vars['ansible_winrm_scheme']=="https" ? :ssl : :basic
+            win7.winrm.ssl_peer_verification = $windows_extra_vars['ansible_winrm_server_cert_validation']=="ignore" ? false : true
+            win7.winrm.port = $windows_extra_vars['ansible_ssh_port']
+            win7.vm.communicator = $windows_extra_vars['ansible_connection']
+            win7.winrm.username = $windows_extra_vars['ansible_ssh_user']
+            win7.winrm.password = $windows_extra_vars['ansible_ssh_pass']
             win7.vm.guest = :windows
             win7.windows.halt_timeout = 15       
             win7.vm.synced_folder ".", "/vagrant", disabled: true
-            win7.vm.provider :vmware_workstation do |v, override|
+            win7.vm.provider :vmware_desktop do |v, override|
                 v.gui = true
                 v.vmx["displayName"] = i['name']
                 v.vmx["memsize"] = "1024"
@@ -414,7 +422,7 @@ Vagrant.configure("2") do |config|
             # absurd hack to get around vagrant support for winrm hardened os
             win7.trigger.after :up do |trigger|
                 trigger.ruby do |env,machine|
-                    win7_config.push(machine.id)
+                    $win7_config.push(machine.id)
                     
                     puts("Machine id: #{machine.id}")
                     sleep(30)
@@ -429,182 +437,190 @@ Vagrant.configure("2") do |config|
                         ip=`cat /etc/vmware/vmnet8/dhcpd/dhcpd.leases |  egrep -o 'lease.*{|ethernet.*;' | awk '{print $2}' | xargs -n 2 | cut -d ';' -f 1 | grep "#{mac}" | tail -1 | awk '{print $1}'`
                         puts("Found ip address in dhcp leases: #{ip}")
                     end
-                    host_hash = win7_hosts_override.find { |h| h['name'] == i['name'] }
+                    host_hash = $win7_hosts_override.find { |h| h['name'] == i['name'] }
                     host_hash['ansible_host'] = ip.strip
                     host_hash['prod_mac'] = mac.strip
 
-                    win7_counter+=1
-                    if win7_counter == win7_count
-                        # build inventory
-                        win16_hosts_override.each do |i|
-                            i['role'].split(",").each do |r|
-                                if roles[r] != nil
-                                    roles[r]["hosts"][i['name']] = windows_extra_vars.clone
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                else
-                                    roles[r] = {"hosts"=>{ i['name'] => windows_extra_vars.clone}}
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                end
-                            end
-                        end
-                        
-                        win10_hosts_override.each do |i|
-                            i['role'].split(",").each do |r|
-                                if roles[r] != nil
-                                    roles[r]["hosts"][i['name']] = windows_extra_vars.clone
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                else
-                                    roles[r] = {"hosts"=>{ i['name'] => windows_extra_vars.clone}}
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                end
-                            end
-                        end
-                        
-                        win7_hosts_override.each do |i|
-                            i['role'].split(",").each do |r|
-                                if roles[r] != nil
-                                    roles[r]["hosts"][i['name']] = windows_extra_vars.clone
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                else
-                                    roles[r] = {"hosts"=>{ i['name'] => windows_extra_vars.clone}}
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                end
-                            end
-                        end
-                        
-                        centos_hosts_override.each do |i|
-                            i['role'].split(",").each do |r|
-                                if roles[r] != nil
-                                    roles[r]["hosts"][i['name']] = centos_extra_vars.clone
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                else
-                                    roles[r] = {"hosts"=>{ i['name'] => centos_extra_vars.clone}}
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                end
-                            end
-                        end
+                    $win7_counter+=1
+                    complete_build
+                end
+            end
+        end
+    end
 
-                        kali_hosts_override.each do |i|
-                            i['role'].split(",").each do |r|
-                                if roles[r] != nil
-                                    roles[r]["hosts"][i['name']] = kali_extra_vars.clone
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                else
-                                    roles[r] = {"hosts"=>{ i['name'] => kali_extra_vars.clone}}
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                end
-                            end
-                        end
+    def complete_build()
 
-                        pfsense_hosts_override.each do |i|
-                            i['role'].split(",").each do |r|
-                                if roles[r] != nil
-                                    roles[r]["hosts"][i['name']] = pfsense_extra_vars.clone
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                else
-                                    roles[r] = {"hosts"=>{ i['name'] => pfsense_extra_vars.clone}}
-                                    roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                                    roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                                    roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
-                                end
-                            end
-                        end
-                        
-                        ansible_inventory['all']['children']['lab']['children'] = roles
-                        File.write(INVENTORY_FILE, ansible_inventory.to_yaml, mode: "a")
 
-                        # set hostname and ssh key based auth
-                        puts("Running post build configuration...")
-                        result=`cd #{ANSIBLE_DIR} && ansible-playbook #{PLAYBOOK_FILE} -i #{INVENTORY_FILE} -v`
-                        puts(result)
-                        puts("Post build configuration complete.")
-
-                        puts("Pushing machines to prod network...")
-                        kali_config.each do |b| 
-                            puts("Updating network...")
-                            r=`vmrun stop "#{b}"`
-                            r=`sleep 10`
-                            r=`sed -i '/ethernet0\.connectiontype/d' "#{b}"`
-                            r=`sed -i '/ethernet0\.vnet/d' "#{b}"`
-                            r=`echo ethernet0.vnet = \"/dev/vmnet3\" >> "#{b}"`
-                            r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-                            r=`vmrun start "#{b}"`
-                            puts("Update network complete.")
-                        end
-
-                        centos_config.each do |b| 
-                            puts("Updating network...")
-                            r=`vmrun stop "#{b}"`
-                            r=`sleep 10`
-                            r=`sed -i '/ethernet0\.connectiontype/d' "#{b}"`
-                            r=`sed -i '/ethernet0\.vnet/d' "#{b}"`
-                            r=`echo ethernet0.vnet = \"/dev/vmnet3\" >> "#{b}"`
-                            r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-                            r=`vmrun start "#{b}"`
-                            puts("Update network complete.")
-                        end
-
-                        win16_config.each do |b| 
-                            puts("Updating network...")
-                            r=`vmrun stop "#{b}"`
-                            r=`sleep 10`
-                            r=`sed -i '/ethernet0\.connectiontype/d' "#{b}"`
-                            r=`sed -i '/ethernet0\.vnet/d' "#{b}"`
-                            r=`echo ethernet0.vnet = \"/dev/vmnet3\" >> "#{b}"`
-                            r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-                            r=`vmrun start "#{b}"`
-                            puts("Update network complete.")
-                        end
-
-                        win10_config.each do |b| 
-                            puts("Updating network...")
-                            r=`vmrun stop "#{b}"`
-                            r=`sleep 10`
-                            r=`sed -i '/ethernet0\.connectiontype/d' "#{b}"`
-                            r=`sed -i '/ethernet0\.vnet/d' "#{b}"`
-                            r=`echo ethernet0.vnet = \"/dev/vmnet3\" >> "#{b}"`
-                            r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-                            r=`vmrun start "#{b}"`
-                            puts("Update network complete.")
-                        end
-
-                        win7_config.each do |b| 
-                            puts("Updating network...")
-                            r=`vmrun stop "#{b}"`
-                            r=`sleep 10`
-                            r=`sed -i '/ethernet0\.connectiontype/d' "#{b}"`
-                            r=`sed -i '/ethernet0\.vnet/d' "#{b}"`
-                            r=`echo ethernet0.vnet = \"/dev/vmnet3\" >> "#{b}"`
-                            r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-                            r=`vmrun start "#{b}"`
-                            puts("Update network complete.")
-                        end
-                        puts("Prod network migration complete.")
+        if $win7_counter == $win7_count && $win10_counter == $win10_count && $win16_counter == $win16_count && $centos_counter == $centos_count && $kali_counter == $kali_count && $pfsense_counter == $pfsense_count
+            # build inventory
+            $win16_hosts_override.each do |i|
+                i['role'].split(",").each do |r|
+                    if $roles[r] != nil
+                        $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    else
+                        $roles[r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
                 end
             end
+            
+            $win10_hosts_override.each do |i|
+                i['role'].split(",").each do |r|
+                    if $roles[r] != nil
+                        $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    else
+                        $roles[r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    end
+                end
+            end
+            
+            $win7_hosts_override.each do |i|
+                i['role'].split(",").each do |r|
+                    if $roles[r] != nil
+                        $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    else
+                        $roles[r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    end
+                end
+            end
+            
+            $centos_hosts_override.each do |i|
+                i['role'].split(",").each do |r|
+                    if $roles[r] != nil
+                        $roles[r]["hosts"][i['name']] = $centos_extra_vars.clone
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    else
+                        $roles[r] = {"hosts"=>{ i['name'] => $centos_extra_vars.clone}}
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    end
+                end
+            end
+
+            $kali_hosts_override.each do |i|
+                i['role'].split(",").each do |r|
+                    if $roles[r] != nil
+                        $roles[r]["hosts"][i['name']] = $kali_extra_vars.clone
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    else
+                        $roles[r] = {"hosts"=>{ i['name'] => $kali_extra_vars.clone}}
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    end
+                end
+            end
+
+            $pfsense_hosts_override.each do |i|
+                i['role'].split(",").each do |r|
+                    if $roles[r] != nil
+                        $roles[r]["hosts"][i['name']] = $pfsense_extra_vars.clone
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    else
+                        $roles[r] = {"hosts"=>{ i['name'] => $pfsense_extra_vars.clone}}
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    end
+                end
+            end
+            
+            $ansible_inventory['all']['children']['lab']['children'] = $roles
+            File.write(INVENTORY_FILE, $ansible_inventory.to_yaml, mode: "a")
+
+            # set hostname and ssh key based auth
+            puts("Running post build configuration...")
+            result=`cd #{ANSIBLE_DIR} && ansible-playbook #{PLAYBOOK_FILE} -i #{INVENTORY_FILE} -v`
+            puts(result)
+            puts("Post build configuration complete.")
+
+            puts("Pushing machines to prod network...")
+            $kali_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
+
+            $centos_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
+
+            $win16_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
+
+            $win10_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
+
+            $win7_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
+            puts("Prod network migration complete.")
+        else
+            puts("Waiting for builds to complete...")
         end
     end
 end
