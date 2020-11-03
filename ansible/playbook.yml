@@ -16,7 +16,7 @@
       - name: Remove any existing host keys
         delegate_to: localhost
         shell: |
-          ssh-keygen -f "/home/{{ whoami.stdout }}/.ssh/known_hosts" -R "{{ansible_host}}"
+          ssh-keygen -f "~/.ssh/known_hosts" -R "{{ansible_host}}"
         ignore_errors: yes
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
