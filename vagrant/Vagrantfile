@@ -24,8 +24,8 @@ end
 win16_hosts_override =                  [
                                             # win16 server
                                             {"name"=>"win16-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
-                                            {"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
-                                            {"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
+                                            #{"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
+                                            #{"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
                                         ]
 
 win10_hosts_override =                  [
@@ -35,15 +35,15 @@ win10_hosts_override =                  [
 
 win7_hosts_override =                   [
                                             # win7 desktop
-                                            {"name"=>"win7-dsk1","prod_ip"=>"172.21.0.21","role"=>"member_server" },
+                                            #{"name"=>"win7-dsk1","prod_ip"=>"172.21.0.21","role"=>"member_server" },
                                         ]
 
 centos_hosts_override =                 [
                                             # ansible
-                                            {"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
+                                            #{"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
                                             
                                             # splunk
-                                            {"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
+                                            #{"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh1","prod_ip"=>"172.21.0.41","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh2","prod_ip"=>"172.21.0.42","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh3","prod_ip"=>"172.21.0.43","role"=>"splunk_search_head,splunk_search_head_captain","custom_security_group"=>"splunk_security_group"},
@@ -54,16 +54,16 @@ centos_hosts_override =                 [
                                             # {"name"=>"splk-idx1","prod_ip"=>"172.21.0.48","role"=>"splunk_indexer","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-idx2","prod_ip"=>"172.21.0.49","role"=>"splunk_indexer","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-hf1","prod_ip"=>"172.21.0.50","role"=>"splunk_heavy_forwarder","custom_security_group"=>"splunk_security_group"},
-                                            {"name"=>"splk-uf1","prod_ip"=>"172.21.0.51","role"=>"splunk_universal_forwarder,suricata,syslog-collector","custom_security_group"=>"splunk_security_group"},
+                                            #{"name"=>"splk-uf1","prod_ip"=>"172.21.0.51","role"=>"splunk_universal_forwarder,suricata,syslog-collector","custom_security_group"=>"splunk_security_group"},
                                         ]
 kali_hosts_override =                   [
                                             # kali
-                                            {"name"=>"kali-pen1","prod_ip"=>"172.21.0.60","role"=>"kali" },
+                                            #{"name"=>"kali-pen1","prod_ip"=>"172.21.0.60","role"=>"kali" },
                                         ]
 
 pfsense_hosts_override =                   [
                                             # pfsense
-                                            {"name"=>"pfsense-gw1","prod_ip"=>"172.21.0.254","role"=>"pfsense" },
+                                            #{"name"=>"pfsense-gw1","prod_ip"=>"172.21.0.254","role"=>"pfsense" },
                                         ]
 # HOST HASHTABLES #
 centos_extra_vars = {
