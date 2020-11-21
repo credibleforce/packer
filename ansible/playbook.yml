@@ -5,6 +5,9 @@
     vars:
       ansible_connection: local
       ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    pre_tasks:
+      - name: Lab variables
+        include_vars: vars/lab.yml
     tasks:
       - name: Run whoami without become.
         delegate_to: localhost
@@ -43,6 +46,9 @@
     vars:
       ssh_key_filename: id_lab
     gather_facts: True
+    pre_tasks:
+      - name: Lab variables
+        include_vars: vars/lab.yml
     tasks:
       - name: Purge existing lab key if present
         delegate_to: localhost
@@ -122,6 +128,9 @@
     vars:
       ssh_key_filename: id_lab
     gather_facts: False
+    pre_tasks:
+      - name: Lab variables
+        include_vars: vars/lab.yml
     tasks:
       - name: Remove domain setting
         become: true
@@ -204,6 +213,9 @@
     gather_facts: True
     environment:
     pre_tasks:
+      - name: Lab variables
+        include_vars: vars/lab.yml
+
       - name: Windows Variable
         include_vars: vars/windows.yml
         when: ansible_system == 'Win32NT'
