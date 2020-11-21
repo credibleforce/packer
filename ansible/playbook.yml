@@ -149,6 +149,25 @@
           add_children:
             - "<domain>{{ lab.dns_name }}</domain>"
 
+      # remove sshguard whitelist
+      - name: Remove sshguard_whitelist setting
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/system/sshguard_whitelist
+          state: absent
+
+      
+      - name: Add empty sshguard_whitelist setting
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/system
+          input_type: xml
+          pretty_print: yes
+          add_children:
+            - "<sshguard_whitelist>172.28.0.0/24</sshguard_whitelist>"
+      
       - name: Remove any existing static dhcp mappings
         become: true
         xml:
