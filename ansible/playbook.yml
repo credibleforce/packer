@@ -123,6 +123,23 @@
       ssh_key_filename: id_lab
     gather_facts: False
     tasks:
+      - name: Remove domain setting
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/system/domain
+          state: absent
+
+      - name: Add domain
+        become: true
+        xml:
+          path: /conf/config.xml
+          xpath: /pfsense/system
+          input_type: xml
+          pretty_print: yes
+          add_children:
+            - "<domain>{{ lab.dns_name }}</domain>"
+
       - name: Remove any existing static dhcp mappings
         become: true
         xml:
@@ -157,7 +174,7 @@
           input_type: xml
           pretty_print: yes
           add_children:
-            "<hosts><host>{{ hostvars[item]['inventory_hostname'] }}</host><domain>lab.local</domain><ip>{{ hostvars[item]['prod_ip'] }}</ip><descr></descr><aliases></aliases></hosts>"
+            "<hosts><host>{{ hostvars[item]['inventory_hostname'] }}</host><domain>{{ lab.dns_name }}</domain><ip>{{ hostvars[item]['prod_ip'] }}</ip><descr></descr><aliases></aliases></hosts>"
         with_inventory_hostnames:
           - all:!local:!pfsense
 

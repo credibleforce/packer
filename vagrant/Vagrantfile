@@ -35,7 +35,7 @@ $win10_hosts_override =                  [
 
 $win7_hosts_override =                   [
                                             # win7 desktop
-                                            {"name"=>"win7-dsk1","prod_ip"=>"172.21.0.21","role"=>"member_server" },
+                                            #{"name"=>"win7-dsk1","prod_ip"=>"172.21.0.21","role"=>"member_server" },
                                         ]
 
 $centos_hosts_override =                 [
@@ -43,7 +43,7 @@ $centos_hosts_override =                 [
                                             {"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
                                             
                                             # splunk
-                                            {"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
+                                            #{"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh1","prod_ip"=>"172.21.0.41","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh2","prod_ip"=>"172.21.0.42","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh3","prod_ip"=>"172.21.0.43","role"=>"splunk_search_head,splunk_search_head_captain","custom_security_group"=>"splunk_security_group"},
@@ -58,7 +58,7 @@ $centos_hosts_override =                 [
                                         ]
 $kali_hosts_override =                   [
                                             # kali
-                                            {"name"=>"kali-pen1","prod_ip"=>"172.21.0.60","role"=>"kali" },
+                                            #{"name"=>"kali-pen1","prod_ip"=>"172.21.0.60","role"=>"kali" },
                                         ]
 
 $pfsense_hosts_override =                   [
