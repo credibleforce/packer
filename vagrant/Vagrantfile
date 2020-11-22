@@ -14,6 +14,7 @@ $public_key = IO.read($public_key_path)
 
 $ANSIBLE_DIR = File.join(File.dirname(__FILE__), "..","ansible")
 $INVENTORY_FILE = File.join($ANSIBLE_DIR, "hosts","inventory.yml")
+$VARS_FILE = File.join($ANSIBLE_DIR, "vars","lab_config.yml")
 $PLAYBOOK_FILE = File.join($ANSIBLE_DIR, "playbook.yml")
 
 if File.exists?($INVENTORY_FILE)
@@ -24,18 +25,18 @@ end
 $win16_hosts_override =                  [
                                             # win16 server
                                             {"name"=>"win16-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
-                                            {"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
+                                            #{"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
                                             #{"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
                                         ]
 
 $win10_hosts_override =                  [
                                             # win10 desktop
-                                            {"name"=>"win10-dsk1","prod_ip"=>"172.21.0.20","role"=>"member_server" },
+                                            #{"name"=>"win10-dsk1","prod_ip"=>"172.21.0.20","role"=>"member_server" },
                                         ]
 
 $win7_hosts_override =                   [
                                             # win7 desktop
-                                            {"name"=>"win7-dsk1","prod_ip"=>"172.21.0.21","role"=>"member_server" },
+                                            #{"name"=>"win7-dsk1","prod_ip"=>"172.21.0.21","role"=>"member_server" },
                                         ]
 
 $centos_hosts_override =                 [
@@ -56,9 +57,24 @@ $centos_hosts_override =                 [
                                             # {"name"=>"splk-hf1","prod_ip"=>"172.21.0.50","role"=>"splunk_heavy_forwarder","custom_security_group"=>"splunk_security_group"},
                                             #{"name"=>"splk-uf1","prod_ip"=>"172.21.0.51","role"=>"splunk_universal_forwarder,suricata,syslog-collector","custom_security_group"=>"splunk_security_group"},
                                         ]
+$splunk_hosts_override =                [
+                                            # splunk
+                                            {"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-sh1","prod_ip"=>"172.21.0.41","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-sh2","prod_ip"=>"172.21.0.42","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-sh3","prod_ip"=>"172.21.0.43","role"=>"splunk_search_head,splunk_search_head_captain","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-lm1","prod_ip"=>"172.21.0.44","role"=>"splunk_license_master","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-dp1","prod_ip"=>"172.21.0.45","role"=>"splunk_deployment_server,splunk_license_master","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-cm1","prod_ip"=>"172.21.0.46","role"=>"splunk_cluster_master","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-sdp1","prod_ip"=>"172.21.0.47","role"=>"splunk_deployer","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-idx1","prod_ip"=>"172.21.0.48","role"=>"splunk_indexer","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-idx2","prod_ip"=>"172.21.0.49","role"=>"splunk_indexer","custom_security_group"=>"splunk_security_group"},
+                                            # {"name"=>"splk-hf1","prod_ip"=>"172.21.0.50","role"=>"splunk_heavy_forwarder","custom_security_group"=>"splunk_security_group"},
+                                            #{"name"=>"splk-uf1","prod_ip"=>"172.21.0.51","role"=>"splunk_universal_forwarder,suricata,syslog-collector","custom_security_group"=>"splunk_security_group"},
+                                        ]                 
 $kali_hosts_override =                   [
                                             # kali
-                                            {"name"=>"kali-pen1","prod_ip"=>"172.21.0.60","role"=>"kali" },
+                                            #{"name"=>"kali-pen1","prod_ip"=>"172.21.0.60","role"=>"kali" },
                                         ]
 
 $pfsense_hosts_override =                   [
@@ -67,6 +83,13 @@ $pfsense_hosts_override =                   [
                                         ]
 # HOST HASHTABLES #
 $centos_extra_vars = {
+    "ansible_ssh_port"=>"22",
+    "ansible_ssh_user"=>"vagrant",
+    "ansible_ssh_pass"=>"vagrant",
+    "ansible_become_password"=>"vagrant",
+}
+
+$splunk_extra_vars = {
     "ansible_ssh_port"=>"22",
     "ansible_ssh_user"=>"vagrant",
     "ansible_ssh_pass"=>"vagrant",
@@ -121,6 +144,7 @@ $ansible_inventory = {
 }
 
 $roles = {}
+$roles_prod = {}
 
 Vagrant.configure("2") do |config|
     # global variables
@@ -130,6 +154,8 @@ Vagrant.configure("2") do |config|
     $kali_counter = 0
     $centos_count = $centos_hosts_override.count
     $centos_counter = 0
+    $splunk_count = $splunk_hosts_override.count
+    $splunk_counter = 0
     $win16_count = $win16_hosts_override.count
     $win16_counter = 0
     $win10_count = $win10_hosts_override.count
@@ -273,6 +299,51 @@ Vagrant.configure("2") do |config|
                     host_hash['ansible_host'] = ip.strip
                     host_hash['prod_mac'] = mac.strip
                     $centos_counter+=1
+                    complete_build
+                end
+            end
+        end
+    end
+
+    $splunk_config = []
+    $splunk_hosts_override.each do |i|
+        config.vm.define i['name'] do |splunk|
+            splunk.ssh.insert_key = false
+            splunk.vm.boot_timeout = 600
+            splunk.vm.box = "vmware-centos8"
+            splunk.ssh.username = $splunk_extra_vars['ansible_ssh_user']
+            splunk.ssh.password = $splunk_extra_vars['ansible_ssh_pass']
+            splunk.vm.synced_folder ".", "/vagrant", disabled: true
+            splunk.vm.provider :vmware_desktop do |v, override|
+                v.gui = true
+                v.vmx["displayName"] = i['name']
+                v.vmx["memsize"] = "1024"
+                v.vmx["numvcpus"] = "2"
+                v.vmx["ethernet0.pcislotnumber"] = "32"
+                #v.vmx["ethernet1.noPromisc"] = "FALSE"
+                v.vmx["tools.upgrade.policy"] = "manual"
+            end
+
+            splunk.trigger.after :up do |trigger|
+                trigger.ruby do |env,machine|
+                    puts("Machine id: #{machine.id}")
+                    $splunk_config.push(machine.id)
+                    mac=`grep "ethernet0.generatedAddress = " "#{machine.id}" | awk -F " = " '{print $2}' | sed 's/"//g'`
+                    ip=`vmrun getGuestIPAddress "#{machine.id}" -wait`
+                    if $?.exitstatus == 0
+                        puts("Found mac address: #{mac}")
+                        puts("Found ip address: #{ip}")
+                    else
+                        puts("Found mac address: #{mac}")
+                        puts("Error - ip address: #{ip}")
+                        
+                        ip=`cat /etc/vmware/vmnet8/dhcpd/dhcpd.leases |  egrep -o 'lease.*{|ethernet.*;' | awk '{print $2}' | xargs -n 2 | cut -d ';' -f 1 | grep "#{mac}" | tail -1 | awk '{print $1}'`
+                        puts("Found ip address in dhcp leases: #{ip}")
+                    end
+                    host_hash = $splunk_hosts_override.find { |h| h['name'] == i['name'] }
+                    host_hash['ansible_host'] = ip.strip
+                    host_hash['prod_mac'] = mac.strip
+                    $splunk_counter+=1
                     complete_build
                 end
             end
@@ -457,10 +528,14 @@ Vagrant.configure("2") do |config|
     def complete_build()
 
 
-        if $win7_counter == $win7_count && $win10_counter == $win10_count && $win16_counter == $win16_count && $centos_counter == $centos_count && $kali_counter == $kali_count && $pfsense_counter == $pfsense_count
-            # build inventory
+        if $win7_counter == $win7_count && $win10_counter == $win10_count && $win16_counter == $win16_count && $centos_counter == $centos_count && $splunk_counter == $splunk_count && $kali_counter == $kali_count && $pfsense_counter == $pfsense_count
+            
+            
+            # build inventory - windows
+            $roles_prod['windows']['children'] = {}
             $win16_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
+                    # build inventory template roles
                     if $roles[r] != nil
                         $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
                         $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
@@ -471,12 +546,20 @@ Vagrant.configure("2") do |config|
                         $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
                         $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
                         $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    end
+
+                    # prod inventory template roles
+                    if $roles_prod['windows']['children'][r] != nil
+                        $roles_prod['windows']['children'][r]["hosts"][i['name']] = $windows_extra_vars.clone
+                    else
+                        $roles_prod['windows']['children'][r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
                     end
                 end
             end
             
             $win10_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
+                    # build inventory template roles
                     if $roles[r] != nil
                         $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
                         $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
@@ -487,12 +570,20 @@ Vagrant.configure("2") do |config|
                         $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
                         $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
                         $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    end
+
+                    # prod inventory template roles
+                    if $roles_prod['windows']['children'][r] != nil
+                        $roles_prod['windows']['children'][r]["hosts"][i['name']] = $windows_extra_vars.clone
+                    else
+                        $roles_prod['windows']['children'][r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
                     end
                 end
             end
             
             $win7_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
+                    # build inventory template roles
                     if $roles[r] != nil
                         $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
                         $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
@@ -504,11 +595,21 @@ Vagrant.configure("2") do |config|
                         $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
                         $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
+
+                    # prod inventory template roles
+                    if $roles_prod['windows']['children'][r] != nil
+                        $roles_prod['windows']['children'][r]["hosts"][i['name']] = $windows_extra_vars.clone
+                    else
+                        $roles_prod['windows']['children'][r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                    end
                 end
             end
             
+            # build inventory - linux
+            $roles_prod['linux']['children'] = {}
             $centos_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
+                    # build inventory template roles
                     if $roles[r] != nil
                         $roles[r]["hosts"][i['name']] = $centos_extra_vars.clone
                         $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
@@ -520,11 +621,20 @@ Vagrant.configure("2") do |config|
                         $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
                         $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
+
+                    # prod inventory template roles
+                    if $roles_prod['linux']['children'][r] != nil
+                        $roles_prod['linux']['children'][r]["hosts"][i['name']] = $centos_extra_vars.clone
+                    else
+                        $roles_prod['linux']['children'][r] = {"hosts"=>{ i['name'] => $centos_extra_vars.clone}}
+                    end
                 end
             end
 
+            # build inventory - kali
             $kali_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
+                    # build inventory template roles
                     if $roles[r] != nil
                         $roles[r]["hosts"][i['name']] = $kali_extra_vars.clone
                         $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
@@ -536,11 +646,47 @@ Vagrant.configure("2") do |config|
                         $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
                         $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
+
+                    # prod inventory template roles
+                    if $roles_prod['linux']['children'][r] != nil
+                        $roles_prod['linux']['children'][r]["hosts"][i['name']] = $kali_extra_vars.clone
+                    else
+                        $roles_prod['linux']['children'][r] = {"hosts"=>{ i['name'] => $kali_extra_vars.clone}}
+                    end
                 end
             end
 
+            # build inventory - splunk
+            $roles_prod['splunk']['children'] = {}
+            $splunk_hosts_override.each do |i|
+                i['role'].split(",").each do |r|
+                    # build inventory template roles
+                    if $roles[r] != nil
+                        $roles[r]["hosts"][i['name']] = $centos_extra_vars.clone
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    else
+                        $roles[r] = {"hosts"=>{ i['name'] => $centos_extra_vars.clone}}
+                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    end
+
+                    # prod inventory template roles
+                    if $roles_prod['splunk']['children'][r] != nil
+                        $roles_prod['splunk']['children'][r]["hosts"][i['name']] = $centos_extra_vars.clone
+                    else
+                        $roles_prod['splunk']['children'][r] = {"hosts"=>{ i['name'] => $centos_extra_vars.clone}}
+                    end
+                end
+            end
+
+            # build inventory - pfsense
+            $roles_prod['pfsense']['children'] = {}
             $pfsense_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
+                    # build inventory template roles
                     if $roles[r] != nil
                         $roles[r]["hosts"][i['name']] = $pfsense_extra_vars.clone
                         $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
@@ -552,11 +698,27 @@ Vagrant.configure("2") do |config|
                         $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
                         $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
+
+                    # prod inventory template roles
+                    if $roles_prod['pfsense']['children'][r] != nil
+                        $roles_prod['pfsense']['children'][r]["hosts"][i['name']] = $pfsense_extra_vars.clone
+                    else
+                        $roles_prod['pfsense']['children'][r] = {"hosts"=>{ i['name'] => $pfsense_extra_vars.clone}}
+                    end
                 end
             end
             
+            # clone inventory base for build and prod
+            $ansible_inventory_prod = $ansible_inventory.clone
+
+            # build inventory file
             $ansible_inventory['all']['children']['lab']['children'] = $roles
             File.write($INVENTORY_FILE, $ansible_inventory.to_yaml, mode: "a")
+            
+            # prod inventory file
+            $ansible_inventory_prod['all']['children']['lab']['children'] = $roles_prod
+            File.write($VARS_FILE, $ansible_inventory_prod.to_yaml, mode: "a")
+            
 
             # set hostname and ssh key based auth
             puts("Running post build configuration...")
@@ -564,6 +726,7 @@ Vagrant.configure("2") do |config|
             puts(result)
             puts("Post build configuration complete.")
 
+            # update network interfaces for all hosts, moving to pfsense
             puts("Pushing machines to prod network...")
             $kali_config.each do |b| 
                 puts("Updating network...")
