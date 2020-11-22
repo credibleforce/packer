@@ -20,4 +20,5 @@ output-*/
 *.msi
 *.msu
 ansible/hosts/*.yml
+ansible/vars/lab_config.yml
 
