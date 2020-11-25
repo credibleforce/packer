@@ -19,6 +19,5 @@ output-*/
 *.exe
 *.msi
 *.msu
-ansible/hosts/*.yml
-ansible/vars/lab_config.yml
+ansible/inventory/*.yml
 
