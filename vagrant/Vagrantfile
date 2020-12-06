@@ -144,9 +144,9 @@ $ansible_inventory = {
 $roles = {}
 $roles_prod = {
     "windows" => {
-        "become" = "no",
+        "become" => "no",
         "vars" => {
-                "ansible_become" = "no"
+                "ansible_become" => "no"
             },
         "children" => {
 
