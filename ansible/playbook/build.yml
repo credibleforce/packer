@@ -204,7 +204,7 @@
           add_children:
             "<hosts><host>{{ hostvars[item]['inventory_hostname'] }}</host><domain>{{ lab.dns_name }}</domain><ip>{{ hostvars[item]['prod_ip'] }}</ip><descr></descr><aliases></aliases></hosts>"
         with_inventory_hostnames:
-          - all:!local:!pfsense
+          - all:!local
 
       - name: Run whoami without become.
         command: whoami
