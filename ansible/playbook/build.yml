@@ -274,6 +274,22 @@
         register: res
         when: ansible_system == 'Win32NT'
 
+      - name: "Update WinRM SSL Certificate with Hostname"
+        win_shell: |
+          Write-Output "Remove existing ssl certificate for winrm"
+          Get-ChildItem -Path WSMan:\localhost\Listener | Where-Object { $_.Keys -contains "Transport=HTTPS" } | Remove-Item -Recurse -Force
+          
+          Write-Output "Enable WinRM HTTPS Listener"
+          $Hostname = [System.Net.Dns]::GetHostByName((hostname)).HostName.ToUpper()
+          $thumbprint = New-LegacySelfSignedCert -SubjectName $Hostname
+          New-Item -Path WSMan:\LocalHost\Listener -Address * -Transport HTTPS -Hostname $Hostname -CertificateThumbPrint $thumbprint -Port "5986" -force
+
+          Write-Output "Restarting WinRM Service..."
+          Stop-Service WinRM
+          Set-Service WinRM -StartupType "Automatic"
+          Start-Service WinRM
+        when: ansible_system == 'Win32NT'
+
       # important to add this first or sudo fails hostname lookup
       - name: Add hostname to /etc/hosts on Linux
         become: true
