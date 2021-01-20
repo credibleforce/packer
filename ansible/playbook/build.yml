@@ -312,7 +312,7 @@
           - ansible_system == 'Win32NT'
           - res.reboot_required
 
-- name: "Update WinRM SSL Certificate with Hostname"
+      - name: "Update WinRM SSL Certificate with Hostname"
         win_shell: |
           Function New-LegacySelfSignedCert
           {
