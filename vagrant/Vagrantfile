@@ -153,21 +153,37 @@ $roles_prod = {
                 }
     },
     "linux" => {
+        "become" => "yes",
+        "vars" => {
+                "ansible_become" => "yes"
+            },
         "children" => {
             
         }
     },
     "splunk" => {
+        "become" => "yes",
+        "vars" => {
+                "ansible_become" => "yes"
+            },
         "children" => {
 
                 }
     },
     "pentest" => {
+        "become" => "yes",
+        "vars" => {
+                "ansible_become" => "yes"
+            },
         "children" => {
 
                 }
     },
     "firewall" => {
+        "become" => "yes",
+        "vars" => {
+                "ansible_become" => "yes"
+            },
         "children" => {
 
                 }
