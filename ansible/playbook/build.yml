@@ -19,7 +19,7 @@
       - name: Remove any existing host keys
         delegate_to: localhost
         shell: |
-          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ansible_host}}"
+          ssh-keygen -f "~/.ssh/known_hosts" -R "{{inventory_hostname}}"
         ignore_errors: yes
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
@@ -30,14 +30,14 @@
           ansible_ssh_port: "{{ hostvars[inventory_hostname]['ansible_ssh_port'] | default('22') }}"
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
-      
+
       - name: Ensure ssh host key known
         delegate_to: localhost
         lineinfile:
           dest: ~/.ssh/known_hosts
           create: yes
           state: present
-          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + ansible_host) }}"
+          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + inventory_hostname, errors='warn') }}"
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
 
