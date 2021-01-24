@@ -24,6 +24,7 @@ $ANSIBLE_DIR = File.join(File.dirname(__FILE__), "..","ansible")
 $INVENTORY_FILE = File.join($ANSIBLE_DIR, "inventory","build.yml")
 $LAB_INVENTORY_FILE = File.join($ANSIBLE_DIR, "inventory","lab.yml")
 $PLAYBOOK_FILE = File.join($ANSIBLE_DIR, "playbook","build.yml")
+$PLAYBOOK_POST_PROD_FILE = File.join($ANSIBLE_DIR, "playbook","post_prod_migration.yml")
 
 if File.exists?($INVENTORY_FILE)
     File.delete($INVENTORY_FILE)
@@ -849,6 +850,12 @@ Vagrant.configure("2") do |config|
                 puts("Update network complete.")
             end
             puts("Prod network migration complete.")
+
+             # updated known hosts with prod ip key
+             puts("Running post prod migration configuration...")
+             result=`cd #{$ANSIBLE_DIR} && ansible-playbook #{$PLAYBOOK_POST_PROD_FILE} -i #{$INVENTORY_FILE} -v`
+             puts(result)
+             puts("Post prod migration configuration complete.")
         else
             puts("Waiting for builds to complete...")
         end

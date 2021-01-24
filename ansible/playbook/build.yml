@@ -22,6 +22,7 @@
         shell: |
           ssh-keygen -f "~/.ssh/known_hosts" -R "{{inventory_hostname}}"
           ssh-keygen -f "~/.ssh/known_hosts" -R "{{ansible_host}}"
+          ssh-keygen -f "~/.ssh/known_hosts" -R "{{hostvars[inventory_hostname].prod_ip}}"
         ignore_errors: yes
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
