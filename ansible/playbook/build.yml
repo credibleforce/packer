@@ -16,7 +16,7 @@
         become: false
         register: whoami
       
-      # at build as dns is unavailable we need to ensure we handle hostname and ip
+      # at build as dns is unavailable we need to ensure we use ansible_host
       - name: Remove any existing host keys by name and assigned ip
         delegate_to: localhost
         shell: |
@@ -33,18 +33,7 @@
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
       
-      # at build as dns is unavailable we need to ensure we handle hostname and ip
-      - name: Ensure ssh host key by inventory_hostname
-        delegate_to: localhost
-        lineinfile:
-          dest: ~/.ssh/known_hosts
-          create: yes
-          state: present
-          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + inventory_hostname, errors='warn') }}"
-        when: 
-          - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
-      
-      # at build as dns is unavailable we need to ensure we handle hostname and ip
+      # at build as dns is unavailable we need to ensure we use ansible_host
       - name: Ensure ssh host key by ansible_host
         delegate_to: localhost
         lineinfile:
