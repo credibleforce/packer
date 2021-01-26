@@ -20,4 +20,4 @@ output-*/
 *.msi
 *.msu
 ansible/inventory/*.yml
-
+vagrant/vmlist
