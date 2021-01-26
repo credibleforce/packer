@@ -9,7 +9,7 @@ fi
 
 SNAP_NAME=$1
 echo "Taking snap shot $SNAP_NAME"
-for vm in $(cat vmlist); do vmrun stop "$vm"; done
-for vm in $(cat vmlist); do vmrun -T ws snapshot "$vm" "$SNAP_NAME"; done
-for vm in $(cat vmlist); do vmrun start "$vm"; done
+for vm in $(cat vmlist.txt); do vmrun stop "$vm"; done
+for vm in $(cat vmlist.txt); do vmrun -T ws snapshot "$vm" "$SNAP_NAME"; done
+for vm in $(cat vmlist.txt); do vmrun start "$vm"; done
 exit 0

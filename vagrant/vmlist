@@ -1,9 +1,0 @@
-/home/jamie/Documents/dev/packer/vagrant/.vagrant/machines/pfsense-gw1/vmware_desktop/08a0dabf-1bc4-46ac-a552-e2437dd83f21/packer-pfsense-amd64.vmx
-/home/jamie/Documents/dev/packer/vagrant/.vagrant/machines/win16-dc1/vmware_desktop/753f89d6-0938-49ad-89b2-1526307bb0bc/windows_2016.vmx
-/home/jamie/Documents/dev/packer/vagrant/.vagrant/machines/splk-sh1/vmware_desktop/c9dac4c0-7c45-407d-a6f9-39e4244aac38/packer-centos-8-x86_64.vmx
-/home/jamie/Documents/dev/packer/vagrant/.vagrant/machines/win10-dsk1/vmware_desktop/9960d670-3609-4bc0-9de8-a2749a1af9b8/windows_10.vmx
-/home/jamie/Documents/dev/packer/vagrant/.vagrant/machines/ansible-srv1/vmware_desktop/0d7f0d12-e5ff-46c6-b39a-02b065bd3ce8/packer-centos-8-x86_64.vmx
-/home/jamie/Documents/dev/packer/vagrant/.vagrant/machines/kali-pen1/vmware_desktop/5ab8ba08-7cac-4636-b37f-09f5ab8cff76/packer-kali-rolling-amd64.vmx
-/home/jamie/Documents/dev/packer/vagrant/.vagrant/machines/win16-srv1/vmware_desktop/7020b7a7-a141-4d7c-8d3b-a96beaa6d12d/windows_2016.vmx
-/home/jamie/Documents/dev/packer/vagrant/.vagrant/machines/splk-uf1/vmware_desktop/6a117ef5-1c24-4e63-8bbd-f76f9fabdb22/packer-centos-8-x86_64.vmx
-/home/jamie/Documents/dev/packer/vagrant/.vagrant/machines/win16-wef1/vmware_desktop/9e6973b8-75e0-4766-afec-85b593c23307/windows_2016.vmx
