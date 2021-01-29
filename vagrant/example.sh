@@ -1,3 +1,3 @@
 #!/bin/bash
 
-vagrant destroy -f && vagrant up && ssh vagrant@172.21.0.30 "git clone --recurse-submodules -j8 --branch develop https://github.com/mobia-security-services/splunk-lab && git clone --recurse-submodules -j8 --branch develop https://github.com/mobia-security-services/splunk-engagement-ansible && cd splunk-lab/ansible && ansible-playbook -vvvv -i inventory/lab.yml playbooks/build-env.yml && cd ../../splunk-engagement-ansible/ansible && ansible-playbook -i example-inventory/splunk-standalone-universalforwarder.yml example-playbooks/install-standalone-deploymentserver-universalforwarder.yml"
+vagrant destroy -f && vagrant up && scp ../ansible/inventory/lab.yml vagrant@172.21.0.30:~ && scp ../../terraform-lab-build/templates/ansible_awx_docker.sh vagrant@172.21.0.30:~ && ssh vagrant@172.21.0.30 -C "chmod 755 ~/ansible_awx_docker.sh && ~/ansible_awx_docker.sh && cd /opt/repo/splunk-lab/ansible && ansible-playbook -i ~/lab.yml playbooks/build-env.yml"
