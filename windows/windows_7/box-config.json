@@ -54,6 +54,10 @@
   ],
   "provisioners": [
     {
+      "script": "../shared/scripts/set-powerplan.ps1",
+      "type": "powershell"
+    },
+    {
       "script": "../shared/scripts/win-7-update-sp1.ps1",
       "type": "powershell"
     },
@@ -110,23 +114,24 @@
     {
       "user": "vagrant",
       "use_proxy": false,
-      "extra_arguments": [
-        "--extra-vars", "ansible_winrm_operation_timeout_sec=60 ansible_winrm_read_timeout_sec=120 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_python_interpreter=/usr/bin/python ansible_winrm_server_cert_validation=ignore", "-vvvv"
+      "type": "ansible",
+      "extra_arguments": [ 
+        "-vvvv"
       ],
-      "playbook_file": "../../ansible/windows_update.yml",
-      "type": "ansible"
+      "playbook_file": "../../ansible/make_inventory.yml",
+      "inventory_directory": "{{pwd}}"
     },
     {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
+      "inline": [
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_security_updates_play.yml\""
+      ],
+      "type": "shell-local"
     },
     {
-      "script": "../shared/scripts/set-powerplan.ps1",
-      "type": "powershell"
-    },
-    {
-      "script": "../shared/scripts/set-powerplan.ps1",
-      "type": "powershell"
+      "inline": [
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_play.yml\""
+      ],
+      "type": "shell-local"
     },
     {
       "script": "../shared/scripts/win-7-update-KB2999226.ps1",
@@ -137,13 +142,10 @@
       "type": "windows-restart"
     },
     {
-      "user": "vagrant",
-      "use_proxy": false,
-      "extra_arguments": [
-        "--extra-vars", "ansible_winrm_operation_timeout_sec=60 ansible_winrm_read_timeout_sec=120 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_python_interpreter=/usr/bin/python ansible_winrm_server_cert_validation=ignore", "-vvvv"
+      "inline": [
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_vmtools_install.yml\""
       ],
-      "playbook_file": "../../ansible/windows_vmtools_install.yml",
-      "type": "ansible"
+      "type": "shell-local"
     },
     {
       "restart_timeout": "{{user `restart_timeout`}}",

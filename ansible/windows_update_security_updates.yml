@@ -1,23 +1,58 @@
-- hosts: all
-  tasks:
-  - name: Install only security updates
-    win_updates:
-      category_names:
-      - SecurityUpdates
-      state: installed
-      log_path: "c:/ansible_win_update.log"
-      blacklist:
-        - Windows Malicious Software Removal Tool for Windows
-        - \d{4}-\d{2} Cumulative Update for Windows Server 2016
-        - \d{4}-\d{2} Security Monthly Quality Rollup
-        - \d{4}-\d{2} Servicing Stack Update
-        - \d{4}-\d{2} Security and Quality Rollup for .NET Framework
-    register: update_result
-    failed_when: 'update_result.failed_update_count is defined and update_result.failed_update_count == update_result.found_update_count'
-    when: "(update_result is not defined) or (update_result.found_update_count is defined and update_result.found_update_count > 0)"
+---
+  - name: win_update retry block
+    block:
+      - name: Increment the retry count
+        set_fact:
+          retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
+        
+      - name: Install only security updates
+        win_updates:
+          category_names:
+          - SecurityUpdates
+          state: installed
+          log_path: "c:/ansible_win_update.log"
+          blacklist:
+            - Windows Malicious Software Removal Tool for Windows
+            - \d{4}-\d{2} Cumulative Update for Windows Server 2016
+            - \d{4}-\d{2} Security Monthly Quality Rollup
+            - \d{4}-\d{2} Servicing Stack Update
+            - \d{4}-\d{2} Security and Quality Rollup for .NET Framework
+          use_scheduled_task: yes
+        async: 5400
+        poll: 10
+        become: yes
+        become_method: runas
+        become_user: SYSTEM
+        register: update_result
+      
+      - debug:
+          msg:
+            - "Update result: {{ update_result }}"
 
-  - name: reboot host if required
-    win_reboot:
-      shutdown_timeout_sec: 30
-      reboot_timeout_sec: 3600
-    when: update_result.reboot_required
+      - name: "Check to see if our host was unreachable and assert"
+        assert:
+          that:
+            - (update_result.unreachable is defined and update_result.unreachable != true) or update_result.unreachable is not defined
+            - (update_result.reboot_required is defined and update_result.reboot_required != true)
+            - (update_result.found_update_count == update_result.installed_update_count)
+    rescue:
+      - fail:
+          msg: Maximum retries of grouped tasks reached
+        when: retry_count | int == 10
+
+      - debug:
+          msg: "Task Group failed, attempting retry"
+
+      - name: Reboot host if required
+        win_reboot:
+          reboot_timeout: 3600
+          post_reboot_delay: 90
+        when: (update_result.reboot_required is defined and update_result.reboot_required == true)
+
+      - name: Wait for system to become reachable over WinRM
+        wait_for_connection:
+          timeout: 900
+          sleep: 60
+          delay: 120
+
+      - include_tasks: windows_update_security_updates.yml

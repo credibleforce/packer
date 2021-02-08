@@ -1,0 +1,17 @@
+
+- hosts: all[0]
+  gather_facts: no
+  connection: local
+  ignore_unreachable: yes
+  tasks:
+    - debug:
+        msg:
+          - "Inventory: {{inventory_file}}"
+          - "Playbook Directory: {{playbook_dir}}"
+          - "Custom Inventory: {{custom_inventory_file}}"
+    
+    - name: Copy packer inventory to local working directory
+      local_action:
+        module: copy
+        src: "{{inventory_file}}"
+        dest: "{{custom_inventory_file}}"

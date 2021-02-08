@@ -21,3 +21,4 @@ output-*/
 *.msu
 ansible/inventory/*.yml
 vagrant/vmlist.txt
+inventory

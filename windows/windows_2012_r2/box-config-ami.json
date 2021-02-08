@@ -73,22 +73,98 @@
   ],
   "provisioners": [
     {
-      "execute_command": "{{.Vars}} cmd /c C:/Windows/Temp/script.bat",
-      "remote_path": "/tmp/script.bat",
       "scripts": [
-        "../shared/scripts/vm-guest-tools.bat",
-        "../shared/scripts/chef.bat",
-        "../shared/scripts/vagrant-ssh.bat",
-        "../shared/scripts/disable-auto-logon.bat",
-        "../shared/scripts/enable-rdp.bat"
+        "../shared/scripts/set-powerplan.ps1"
       ],
-      "type": "shell"
+      "type": "powershell"
+    },
+    {
+      "script": "../shared/scripts/win-8.1-update-windows-update-agent.ps1",
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "script": "../shared/scripts/win-8.1-update-2015.ps1",
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "script": "../shared/scripts/win-81-update-2019-09-update-rollup.ps1",
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+
+    {
+      "script": "../shared/scripts/win-81-update-2019-10-update-rollup.ps1",
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "script": "../shared/scripts/win-81-update-2020-01-update-rollup.ps1",
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "script": "../shared/scripts/win-update-net48.ps1",
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "script": "../shared/scripts/win-8.1-update-powershell-5.1.ps1",
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
+    },
+    {
+      "user": "vagrant",
+      "use_proxy": false,
+      "type": "ansible",
+      "extra_arguments": [ 
+        "-vvvv"
+      ],
+      "playbook_file": "../../ansible/make_inventory.yml",
+      "inventory_directory": "{{pwd}}"
     },
     {
       "inline": [
-        "rm -rf /tmp/*"
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_security_updates_play.yml\""
       ],
-      "type": "shell"
+      "type": "shell-local"
+    },
+    {
+      "inline": [
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_play.yml\""
+      ],
+      "type": "shell-local"
+    },
+    {
+      "scripts": [
+        "../shared/scripts/vm-guest-tools.bat",
+        "../shared/scripts/enable-rdp.bat",
+        "../shared/scripts/compile-dotnet-assemblies.bat",
+        "../shared/scripts/compact.bat"
+      ],
+      "type": "windows-shell"
     }
   ],
   "variables": {
