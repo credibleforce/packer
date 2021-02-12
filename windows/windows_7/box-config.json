@@ -100,20 +100,6 @@
     {
       "user": "vagrant",
       "use_proxy": false,
-      "extra_arguments": [ 
-        "--extra-vars", "ansible_winrm_operation_timeout_sec=60 ansible_winrm_read_timeout_sec=120 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_python_interpreter=/usr/bin/python ansible_winrm_server_cert_validation=ignore", "-vvvv"
-        
-      ],
-      "playbook_file": "../../ansible/windows_update_security_updates.yml",
-      "type": "ansible"
-    },
-    {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
-    },
-    {
-      "user": "vagrant",
-      "use_proxy": false,
       "type": "ansible",
       "extra_arguments": [ 
         "-vvvv",
