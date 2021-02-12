@@ -27,13 +27,11 @@
       "iso_checksum": "{{user `iso_checksum`}}",
       "iso_url": "{{user `iso_url`}}",
       "memory": "{{user `memory`}}",
-      "shutdown_command": "a:/sysprep.bat",
-      "shutdown_timeout": "15m",
+      "shutdown_command": "a:\\sysprep.bat",
+      "shutdown_timeout": "3600m",
       "skip_compaction": true,
       
-      "type": "vmware-iso",
-      
-      "version": 14,
+      "type": "vmware-iso","version": 14,
       "vm_name": "{{user `vm_name`}}",
       "vmx_data": {
         "RemoteDisplay.vnc.enabled": "false",
@@ -90,17 +88,20 @@
       "type": "shell-local"
     },
     {
-      "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
-      "scripts": [
-        "../shared/scripts/vm-guest-tools.bat",
-        "../shared/scripts/enable-rdp.bat"
+      "inline": [
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_vmtools_install.yml\""
       ],
-      "type": "windows-shell"
+      "type": "shell-local"
+    },
+    {
+      "restart_timeout": "{{user `restart_timeout`}}",
+      "type": "windows-restart"
     },
     {
       "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
       "remote_path": "/tmp/script.bat",
       "scripts": [
+        "../shared/scripts/enable-rdp.bat",
         "../shared/scripts/pin-powershell.bat",
         "../shared/scripts/compile-dotnet-assemblies.bat",
         "../shared/scripts/set-winrm-automatic.bat",

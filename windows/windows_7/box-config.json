@@ -23,9 +23,9 @@
       "iso_checksum": "{{user `iso_checksum`}}",
       "iso_url": "{{user `iso_url`}}",
       "memory": "{{user `memory`}}",
-      "shutdown_command": "c:/windows/system32/sysprep/sysprep.exe /generalize /oobe /quiet /shutdown /unattend:a:/unattend.xml",
+      "shutdown_command": "a:\\sysprep.bat",
+      "shutdown_timeout": "3600m",
       "type": "vmware-iso",
-      
       "version": 14,
       "vm_name": "{{user `vm_name`}}",
       "vmx_data": {
@@ -140,6 +140,12 @@
     {
       "restart_timeout": "{{user `restart_timeout`}}",
       "type": "windows-restart"
+    },
+    {
+      "inline": [
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_vmtools_install.yml\""
+      ],
+      "type": "shell-local"
     },
     {
       "inline": [

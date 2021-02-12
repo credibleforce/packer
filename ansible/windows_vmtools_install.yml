@@ -63,11 +63,13 @@
           executable: cmd
         register: vmtools
         ignore_errors: yes
+        ignore_unreachable: yes
         
-      - name: Result
-        debug:
-          msg:
-            - "{{ vmtools }}"
+      - name: Wait for system to become reachable over WinRM
+        wait_for_connection:
+          timeout: 900
+          sleep: 60
+          delay: 120
 
       - name: Remove ISO and Tar
         win_shell: |

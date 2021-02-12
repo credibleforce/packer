@@ -14,18 +14,16 @@
         "../shared/scripts/enable-winrm.bat",
         "../shared/scripts/microsoft-updates.bat",
         "../shared/scripts/enable-tls12.bat",
-        "../shared/scripts/unattend.xml",
-        "../shared/scripts/sysprep.bat"
+        "../shared/scripts/unattend.xml"
       ],
       "guest_os_type": "windows7-64",
       "headless": "{{user `headless`}}",
       "iso_checksum": "{{user `iso_checksum`}}",
       "iso_url": "{{user `iso_url`}}",
       "memory": "{{user `memory`}}",
-      "shutdown_command": "c:/windows/system32/sysprep/sysprep.exe /generalize /oobe /quiet /shutdown /unattend:a:/unattend.xml",
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c Packer_Provisioning_Shutdown",
+      "shutdown_timeout": "3600m",
       "type": "vmware-iso",
-      
-      
       "version": 14,
       "vm_name": "{{user `vm_name`}}",
       "vmx_data": {
@@ -159,6 +157,12 @@
       "type": "shell-local"
     },
     {
+      "inline": [
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_vmtools_install.yml\""
+      ],
+      "type": "shell-local"
+    },
+    {
       "restart_timeout": "{{user `restart_timeout`}}",
       "type": "windows-restart"
     },
@@ -168,13 +172,28 @@
         "../shared/scripts/enable-rdp.bat",
         "../shared/scripts/compile-dotnet-assemblies.bat",
         "../shared/scripts/enable-uac.bat",
-        "../shared/scripts/compact.bat"
+        "../shared/scripts/compact.bat",
+        "{{ user `aws_unattend` }}"
       ],
       "type": "windows-shell"
+    }
+    {
+      "type": "powershell",
+      "scripts": [
+        "../shared/scripts/install-ec2launch.ps1"
+      ]
+    },
+    {
+      "type": "powershell",
+      "inline": [
+         "C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\InitializeInstance.ps1 -Schedule",
+         "C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\SysprepInstance.ps1 -NoShutdown"
+      ]
     }
   ],
   "variables": {
     "autounattend": "../shared/answer_files/7/Autounattend.xml",
+    "aws_unattend": "../shared/answer_files/amazon/AWS_Unattend.xml",
     "disk_size": "61440",
     "memory": "2048",
     "headless": "false",
