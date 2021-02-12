@@ -125,7 +125,8 @@
       "use_proxy": false,
       "type": "ansible",
       "extra_arguments": [ 
-        "-vvvv"
+        "-vvvv",
+        "-e","custom_inventory_file=\"{{pwd}}/inventory\""
       ],
       "playbook_file": "../../ansible/make_inventory.yml",
       "inventory_directory": "{{pwd}}"
