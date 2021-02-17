@@ -2,23 +2,25 @@
   "builders": [
     {
       "name": "{{user `vm_name`}}",
-      "boot_wait": "2m",
+      "boot_command": "",
+      "boot_wait": "6m",
       "communicator": "winrm",
       "cpus": 2,
       "disk_adapter_type": "ide",
       "disk_size": "{{user `disk_size`}}",
+      "disk_type_id": "{{user `disk_type_id`}}",
       "floppy_files": [
         "{{user `autounattend`}}",
-        "./floppy/WindowsPowershell.lnk",
-        "./floppy/PinTo10.exe",
-        "./scripts/fixnetwork.ps1",
-        "./scripts/disable-screensaver.ps1",
-        "./scripts/disable-winrm.ps1",
-        "./scripts/enable-winrm.ps1",
-        "./scripts/microsoft-updates.bat",
-        "./scripts/enable-tls12.bat",
-        "./scripts/unattend.xml",
-        "./scripts/win-updates.ps1",
+        "../floppy/WindowsPowershell.lnk",
+        "../floppy/PinTo10.exe",
+        "../scripts/fixnetwork.ps1",
+        "../scripts/disable-screensaver.ps1",
+        "../scripts/disable-winrm.ps1",
+        "../scripts/enable-winrm.ps1",
+        "../scripts/microsoft-updates.bat",
+        "../scripts/enable-tls12.bat",
+        "../scripts/unattend.xml",
+        "../scripts/win-updates.ps1",
         "{{ user `aws_unattend` }}"
       ],
       "guest_os_type": "windows9srv-64",
@@ -29,8 +31,8 @@
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c Packer_Provisioning_Shutdown",
       "shutdown_timeout": "3600m",
       "skip_compaction": true,
-      
-      "type": "vmware-iso","version": 14,
+      "type": "vmware-iso",
+      "version": 14,
       "vm_name": "{{user `vm_name`}}",
       "vmx_data": {
         "RemoteDisplay.vnc.enabled": "false",
@@ -39,12 +41,13 @@
       "vmx_remove_ethernet_interfaces": "{{user `vmx_remove_ethernet_interfaces`}}",
       "vnc_port_max": 5980,
       "vnc_port_min": 5900,
-      "winrm_password": "vagrant",
+      "winrm_password": "{{user `winrm_password`}}",
       "winrm_timeout": "{{user `winrm_timeout`}}",
-      "winrm_username": "vagrant",
+      "winrm_username": "{{user `winrm_username`}}",
       "winrm_use_ssl": "true",
       "winrm_insecure": "true",
-      "winrm_use_ntlm": "true"
+      "winrm_use_ntlm": "true",
+      "winrm_port": 5986
     }
   ],
   "post-processors": [
@@ -141,17 +144,20 @@
   "variables": {
     "autounattend": "../shared/answer_files/2016/Autounattend.xml",
     "aws_unattend": "../shared/answer_files/amazon/AWS_Unattend.xml",
-    "vm_name": "windows_2016",
     "disk_size": "61440",
     "disk_type_id": "1",
     "memory": "2048",
     "headless": "false",
-    "hyperv_switchname": "{{env `hyperv_switchname`}}",
     "iso_checksum": "md5:70721288BBCDFE3239D8F8C0FAE55F1F",
     "iso_url": "https://software-download.microsoft.com/download/pr/Windows_Server_2016_Datacenter_EVAL_en-us_14393_refresh.ISO",
     "restart_timeout": "5m",
-    "winrm_timeout": "4h",
-    "vmx_remove_ethernet_interfaces": "false"
+    "vhv_enable": "false",
+    "virtio_win_iso": "~/virtio-win.iso",
+    "vm_name": "windows_2016",
+    "winrm_timeout": "6h",
+    "vmx_remove_ethernet_interfaces": "false",
+    "winrm_username": "vagrant",
+    "winrm_password": "vagrant"
   }
 }
 
