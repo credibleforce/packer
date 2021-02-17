@@ -2,19 +2,25 @@
   "builders": [
     {
       "name": "{{user `vm_name`}}",
-      "boot_wait": "2m",
+      "boot_command": "",
+      "boot_wait": "6m",
       "communicator": "winrm",
       "cpus": 2,
       "disk_adapter_type":"ide",
       "disk_size": "{{user `disk_size`}}",
+      "disk_type_id": "{{user `disk_type_id`}}",
       "floppy_files": [
         "{{user `autounattend`}}",
+        "../shared/floppy/WindowsPowershell.lnk",
         "../shared/scripts/fixnetwork.ps1",
         "../shared/scripts/disable-screensaver.ps1",
-        "../shared/scripts/enable-winrm.bat",
+        "../shared/scripts/disable-winrm.ps1",
+        "../shared/scripts/enable-winrm.ps1",
         "../shared/scripts/microsoft-updates.bat",
         "../shared/scripts/enable-tls12.bat",
-        "../shared/scripts/unattend.xml"
+        "../shared/scripts/unattend.xml",
+        "../shared/scripts/win-updates.ps1",
+        "{{ user `aws_unattend` }}"
       ],
       "guest_os_type": "windows7-64",
       "headless": "{{user `headless`}}",
@@ -23,6 +29,7 @@
       "memory": "{{user `memory`}}",
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c Packer_Provisioning_Shutdown",
       "shutdown_timeout": "3600m",
+      "skip_compaction": true,
       "type": "vmware-iso",
       "version": 14,
       "vm_name": "{{user `vm_name`}}",
@@ -30,14 +37,16 @@
         "RemoteDisplay.vnc.enabled": "false",
         "RemoteDisplay.vnc.port": "5900"
       },
+      "vmx_remove_ethernet_interfaces": "{{user `vmx_remove_ethernet_interfaces`}}",
       "vnc_port_max": 5980,
       "vnc_port_min": 5900,
-      "winrm_password": "vagrant",
+      "winrm_password": "{{user `winrm_password`}}",
       "winrm_timeout": "{{user `winrm_timeout`}}",
-      "winrm_username": "vagrant",
+      "winrm_username": "{{user `winrm_username`}}",
       "winrm_use_ssl": "true",
       "winrm_insecure": "true",
-      "winrm_use_ntlm": "true"
+      "winrm_use_ntlm": "true",
+      "winrm_port": 5986
     }
   ],
   "post-processors": [
@@ -155,10 +164,12 @@
       "execute_command": "{{ .Vars }} cmd /c \"{{ .Path }}\"",
       "scripts": [
         "../shared/scripts/enable-rdp.bat",
+        "../shared/scripts/pin-powershell.bat",
         "../shared/scripts/compile-dotnet-assemblies.bat",
-        "../shared/scripts/enable-uac.bat",
+        "../shared/scripts/set-winrm-automatic.bat",
+        "../shared/scripts/uac-enable.bat",
+        "../shared/scripts/dis-updates.bat",
         "../shared/scripts/compact.bat",
-        "{{ user `aws_unattend` }}"
       ],
       "type": "windows-shell"
     },
@@ -185,10 +196,13 @@
     "iso_checksum": "md5:1d0d239a252cb53e466d39e752b17c28",
     "iso_url": "http://care.dlservice.microsoft.com/dl/download/evalx/win7/x64/EN/7600.16385.090713-1255_x64fre_enterprise_en-us_EVAL_Eval_Enterprise-GRMCENXEVAL_EN_DVD.iso",
     "restart_timeout": "20m",
+    "vhv_enable": "false",
     "virtio_win_iso": "~/virtio-win.iso",
     "vm_name": "windows_7",
     "winrm_timeout": "6h",
-    "vmx_remove_ethernet_interfaces": "false"
+    "vmx_remove_ethernet_interfaces": "false",
+    "winrm_username": "vagrant",
+    "winrm_password": "vagrant"
   }
 }
 
