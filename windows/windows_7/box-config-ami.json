@@ -161,7 +161,7 @@
         "{{ user `aws_unattend` }}"
       ],
       "type": "windows-shell"
-    }
+    },
     {
       "type": "powershell",
       "scripts": [
