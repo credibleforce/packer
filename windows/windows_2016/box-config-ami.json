@@ -29,7 +29,7 @@
       "iso_checksum": "{{user `iso_checksum`}}",
       "iso_url": "{{user `iso_url`}}",
       "memory": "{{user `memory`}}",
-      "shutdown_command": "a:\\sysprep.bat",
+      "shutdown_command": "a:\\shutdown.bat",
       "shutdown_timeout": "3600m",
       "skip_compaction": true,
       "type": "vmware-iso",
