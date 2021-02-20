@@ -49,9 +49,13 @@
             <ImageInstall>
                 <OSImage>
                     <InstallFrom>
-                        <MetaData wcm:action="add">
+                        <!-- <MetaData wcm:action="add">
                             <Key>/IMAGE/NAME</Key>
                             <Value>Windows Server 2012 R2 SERVERSTANDARD</Value>
+                        </MetaData> -->
+                         <MetaData wcm:action="add">
+                            <Key>/IMAGE/INDEX</Key>
+                            <Value>2</Value>
                         </MetaData>
                     </InstallFrom>
                     <InstallTo>

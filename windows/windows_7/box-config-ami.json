@@ -27,7 +27,7 @@
       "iso_checksum": "{{user `iso_checksum`}}",
       "iso_url": "{{user `iso_url`}}",
       "memory": "{{user `memory`}}",
-      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c Packer_Provisioning_Shutdown",
+      "shutdown_command": "shutdown /s /t 60 /f /c Packer_Provisioning_Shutdown",
       "shutdown_timeout": "3600m",
       "skip_compaction": true,
       "type": "vmware-iso",
@@ -170,6 +170,7 @@
         "../shared/scripts/uac-enable.bat",
         "../shared/scripts/dis-updates.bat",
         "../shared/scripts/compact.bat",
+        "../shared/scripts/complete-setup.bat"
       ],
       "type": "windows-shell"
     },
