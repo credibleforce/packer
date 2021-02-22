@@ -151,17 +151,10 @@
       "type": "windows-shell"
     },
     {
-      "type": "powershell",
-      "scripts": [
-        "../shared/scripts/install-ec2launch.ps1"
-      ]
-    },
-    {
-      "type": "powershell",
       "inline": [
-         "C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\InitializeInstance.ps1 -Schedule",
-         "C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\SysprepInstance.ps1 -NoShutdown"
-      ]
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_ec2prep.yml\""
+      ],
+      "type": "shell-local"
     }
   ],
   "variables": {
