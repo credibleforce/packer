@@ -11,7 +11,7 @@ if(!(Test-Path $LPath)){
 
 Invoke-WebRequest -Uri $EC2LaunchZip -OutFile $OutPath
 Invoke-WebRequest -Uri $EC2LaunchInstall -OutFile $OutInstallPath
-& $EC2LaunchInstall
+& $OutInstallPath
 
 # Expand-Archive -Path $OutPath -DestinationPath $LPath
 Remove-Item $OutPath
