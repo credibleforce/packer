@@ -263,16 +263,17 @@
       - name: "Windows Base Provisioning"
         win_shell: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          Set-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -Type DWord
+          Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -Type DWord
+          Set-ExecutionPolicy RemoteSigned -Scope LocalMachine
+          
           Get-LocalUser -Name "Administrator" | Enable-LocalUser
           $admin = [adsi]("WinNT://./{{ windows.local_admin_user }}, user")
           $admin.PSBase.Invoke("SetPassword", "{{ windows.local_admin_password }}")
           
           # update nuget
-          Install-PackageProvider -Name NuGet -Force
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          Import-Module PowerShellGet 
-          Install-Module PackageManagement -Force -Repository PSGallery
-          if([environment]::OSVersion.version.Major -lt 6) { return }
+          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
+          Set-PSRepository -Name PSGallery -Trusted
         when: ansible_system == 'Win32NT'
     
       - name: "Change the hostname on Windows"
