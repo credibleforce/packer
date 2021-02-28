@@ -16,8 +16,7 @@
         "../shared/scripts/microsoft-updates.bat",
         "../shared/scripts/enable-tls12.bat",
         "../shared/scripts/unattend.xml",
-        "../shared/scripts/win-updates.ps1",
-        "../shared/scripts/sysprep.bat"
+        "../shared/scripts/win-updates.ps1"
       ],
       "guest_os_type": "windows7srv-64",
       "headless": "{{user `headless`}}",
@@ -87,12 +86,21 @@
       "type": "windows-restart"
     },
     {
-      "user": "vagrant",
+      "user": "{{user `winrm_username`}}",
       "use_proxy": false,
       "type": "ansible",
       "extra_arguments": [ 
         "-vvvv",
-        "-e","custom_inventory_file=\"{{pwd}}/inventory\""
+        "-e","custom_inventory_file=\"{{pwd}}/inventory\"",
+        "-e","ansible_connection=winrm",
+        "-e","ansible_ssh_port=5986",
+        "-e","ansible_ssh_user=\"{{user `winrm_username`}}\"",
+        "-e","ansible_ssh_pass=\"{{user `winrm_password`}}\"",
+        "-e","ansible_winrm_operation_timeout_sec=60",
+        "-e","ansible_winrm_read_timeout_sec=120",
+        "-e","ansible_winrm_scheme=https",
+        "-e","ansible_winrm_transport=ntlm",
+        "-e","ansible_winrm_server_cert_validation=ignore"
       ],
       "playbook_file": "../../ansible/make_inventory.yml",
       "inventory_directory": "{{pwd}}"
@@ -125,7 +133,8 @@
         "../shared/scripts/enable-rdp.bat",
         "../shared/scripts/compile-dotnet-assemblies.bat",
         "../shared/scripts/enable-uac.bat",
-        "../shared/scripts/compact.bat"
+        "../shared/scripts/compact.bat",
+        "../shared/scripts/sysprep.bat"
       ],
       "type": "windows-shell"
     }

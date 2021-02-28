@@ -20,18 +20,14 @@
         "../shared/scripts/microsoft-updates.bat",
         "../shared/scripts/enable-tls12.bat",
         "../shared/scripts/unattend.xml",
-        "../shared/scripts/win-updates.ps1",
-        "../shared/scripts/sysprep.bat"
+        "../shared/scripts/win-updates.ps1"
       ],
       "guest_os_type": "windows9srv-64",
       "headless": "{{user `headless`}}",
       "iso_checksum": "{{user `iso_checksum`}}",
       "iso_url": "{{user `iso_url`}}",
       "memory": "{{user `memory`}}",
-      "shutdown_command": "a:\\sysprep.bat",
-      "shutdown_timeout": "3600m",
       "skip_compaction": true,
-      
       "type": "vmware-iso","version": 14,
       "vm_name": "{{user `vm_name`}}",
       "vmx_data": {
@@ -68,12 +64,21 @@
       "type": "powershell"
     },
     {
-      "user": "vagrant",
+      "user": "{{user `winrm_username`}}",
       "use_proxy": false,
       "type": "ansible",
       "extra_arguments": [ 
         "-vvvv",
-        "-e","custom_inventory_file=\"{{pwd}}/inventory\""
+        "-e","custom_inventory_file=\"{{pwd}}/inventory\"",
+        "-e","ansible_connection=winrm",
+        "-e","ansible_ssh_port=5986",
+        "-e","ansible_ssh_user=\"{{user `winrm_username`}}\"",
+        "-e","ansible_ssh_pass=\"{{user `winrm_password`}}\"",
+        "-e","ansible_winrm_operation_timeout_sec=60",
+        "-e","ansible_winrm_read_timeout_sec=120",
+        "-e","ansible_winrm_scheme=https",
+        "-e","ansible_winrm_transport=ntlm",
+        "-e","ansible_winrm_server_cert_validation=ignore"
       ],
       "playbook_file": "../../ansible/make_inventory.yml",
       "inventory_directory": "{{pwd}}"
@@ -110,7 +115,8 @@
         "../shared/scripts/set-winrm-automatic.bat",
         "../shared/scripts/uac-enable.bat",    
         "../shared/scripts/dis-updates.bat",
-        "../shared/scripts/compact.bat"
+        "../shared/scripts/compact.bat",
+        "../shared/scripts/sysprep.bat"
       ],
       "type": "windows-shell"
     }
