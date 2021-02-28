@@ -27,8 +27,6 @@
       "iso_checksum": "{{user `iso_checksum`}}",
       "iso_url": "{{user `iso_url`}}",
       "memory": "{{user `memory`}}",
-      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c Packer_Provisioning_Shutdown",
-      "shutdown_timeout": "3600m",
       "skip_compaction": true, 
       "type": "vmware-iso",
       "version": 14,
@@ -126,13 +124,13 @@
     },
     {
       "inline": [
-          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_security_updates_play.yml\""
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_security_updates_play.yml\""
       ],
       "type": "shell-local"
     },
     {
       "inline": [
-          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_play.yml\""
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_play.yml\""
       ],
       "type": "shell-local"
     },
@@ -152,7 +150,7 @@
     },
     {
       "inline": [
-          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=vagrant -e ansible_ssh_pass=vagrant -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_ec2prep.yml\""
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_ec2prep.yml\""
       ],
       "type": "shell-local"
     }
@@ -172,8 +170,8 @@
     "vm_name": "windows_2008_r2",
     "winrm_timeout": "6h",
     "vmx_remove_ethernet_interfaces": "false",
-    "winrm_username": "vagrant",
-    "winrm_password": "vagrant"
+    "winrm_username": "administrator",
+    "winrm_password": "myTempPassword123"
   }
 }
 

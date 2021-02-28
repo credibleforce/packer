@@ -23,12 +23,12 @@
             </OOBE>
             <AutoLogon>
                 <Password>
-                    <Value>vagrant</Value>
+                    <Value>myTempPassword123</Value>
                     <PlainText>true</PlainText>
                 </Password>
                 <Enabled>true</Enabled>
                 <LogonCount>1</LogonCount>
-                <Username>vagrant</Username>
+                <Username>dministrator</Username>
             </AutoLogon>
         </component>
     </settings>
