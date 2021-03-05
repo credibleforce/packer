@@ -135,7 +135,7 @@
     "virtio_win_iso": "~/virtio-win.iso",
     "winrm_timeout": "6h",
     "vmx_remove_ethernet_interfaces": "false",
-    "winrm_username": "administrator",
+    "winrm_username": "Administrator",
     "winrm_password": "myTempPassword123"
   }
 }

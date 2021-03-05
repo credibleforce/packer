@@ -73,7 +73,6 @@
         "-e","custom_inventory_file=\"{{pwd}}/inventory\"",
         "-e","ansible_connection=winrm",
         "-e","ansible_ssh_port=5986",
-        "-e","ansible_user=\"{{user `winrm_username`}}\"",
         "-e","ansible_ssh_user=\"{{user `winrm_username`}}\"",
         "-e","ansible_ssh_pass=\"{{user `winrm_password`}}\"",
         "-e","ansible_winrm_operation_timeout_sec=60",

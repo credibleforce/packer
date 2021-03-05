@@ -99,6 +99,7 @@
                 </Password>
                 <Username>administrator</Username>
                 <Enabled>true</Enabled>
+                <LogonCount>1</LogonCount>
             </AutoLogon>
             <FirstLogonCommands>
                 <SynchronousCommand wcm:action="add">

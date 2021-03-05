@@ -6,6 +6,18 @@
         include_vars: vars/windows.yml
         when: ansible_system == 'Win32NT'
     tasks:
+      # - name: 
+      #   win_shell: |
+      #     #$AccountsToKeep = @('administrator','Public','default','DOMAIN\administrator')
+      #     #Get-CimInstance -Class Win32_UserProfile | Where-Object { $_.LocalPath.split('\')[-1] -notin $AccountsToKeep }
+      #     #Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"
+      #   register: script_result
+
+      # - name: Script result
+      #   debug:
+      #     msg: 
+      #       - "{{ script_result }}"
+
       - name: Run sysprep
         win_shell: |
           # Prepare the custom unattend if it exists

@@ -102,8 +102,9 @@
                     <Value>myTempPassword123</Value>
                     <PlainText>true</PlainText>
                 </Password>
-                <Username>Administrator</Username>
+                <Username>administrator</Username>
                 <Enabled>true</Enabled>
+                <LogonCount>99</LogonCount>
             </AutoLogon>
             <FirstLogonCommands>
                 <SynchronousCommand wcm:action="add">

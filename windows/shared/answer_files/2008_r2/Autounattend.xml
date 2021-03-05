@@ -104,18 +104,6 @@
                     <Value>myTempPassword123</Value>
                     <PlainText>true</PlainText>
                 </AdministratorPassword>
-                <LocalAccounts>
-                    <LocalAccount wcm:action="add">
-                        <Password>
-                            <Value>vagrant</Value>
-                            <PlainText>true</PlainText>
-                        </Password>
-                        <DisplayName>vagrant</DisplayName>
-                        <Group>administrators</Group>
-                        <Name>vagrant</Name>
-                        <Description>Vagrant</Description>
-                    </LocalAccount>
-                </LocalAccounts>
             </UserAccounts>
             <OOBE>
                 <HideEULAPage>true</HideEULAPage>
@@ -131,6 +119,7 @@
                 </Password>
                 <Username>administrator</Username>
                 <Enabled>true</Enabled>
+                <LogonCount>99</LogonCount>
             </AutoLogon>
             <FirstLogonCommands>
                 %SystemRoot%\System32\reg.exe ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ /v Start_ShowRun /t REG_DWORD /d 1 /
