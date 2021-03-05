@@ -73,6 +73,7 @@
         "-e","custom_inventory_file=\"{{pwd}}/inventory\"",
         "-e","ansible_connection=winrm",
         "-e","ansible_ssh_port=5986",
+        "-e","ansible_user=\"{{user `winrm_username`}}\"",
         "-e","ansible_ssh_user=\"{{user `winrm_username`}}\"",
         "-e","ansible_ssh_pass=\"{{user `winrm_password`}}\"",
         "-e","ansible_winrm_operation_timeout_sec=60",
@@ -86,27 +87,22 @@
     },
     {
       "inline": [
-          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_security_updates_play.yml\""
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_user=\"{{user `winrm_username`}}\" -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_security_updates_play.yml\""
       ],
       "type": "shell-local"
     },
     {
       "inline": [
-          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_play.yml\""
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_user=\"{{user `winrm_username`}}\" -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_update_play.yml\""
       ],
       "type": "shell-local"
     },
     {
       "inline": [
-          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_vmtools_install.yml\""
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_user=\"{{user `winrm_username`}}\" -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_vmtools_install.yml\""
       ],
       "type": "shell-local"
     },
-    {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
-    },
-    
     {
       "restart_timeout": "{{user `restart_timeout`}}",
       "type": "windows-restart"
@@ -121,10 +117,15 @@
         "../shared/scripts/set-winrm-automatic.bat",
         "../shared/scripts/uac-enable.bat",
         "../shared/scripts/dis-updates.bat",
-        "../shared/scripts/compact.bat",
-        "../shared/scripts/sysprep.bat"
+        "../shared/scripts/compact.bat"
       ],
       "type": "windows-shell"
+    },
+    {
+      "inline": [
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_user=\"{{user `winrm_username`}}\" -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_sysprep.yml\""
+      ],
+      "type": "shell-local"
     }
   ],
   "variables": {

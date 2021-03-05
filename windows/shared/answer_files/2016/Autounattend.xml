@@ -220,7 +220,6 @@
                     <Value>myTempPassword123</Value>
                     <PlainText>true</PlainText>
                 </AdministratorPassword>
-                <!--  -->
             </UserAccounts>
             <RegisteredOwner/>
         </component>
