@@ -120,13 +120,13 @@
                     <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File e:\fixnetwork.ps1</CommandLine>
+                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File e:\fixnetwork.ps1</CommandLine>
                     <Description>Fix public network</Description>
                     <Order>4</Order>
                     <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File e:\disable-winrm.ps1</CommandLine>
+                    <CommandLine>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File e:\disable-winrm.ps1</CommandLine>
                     <Description>Disable WinRM</Description>
                     <Order>5</Order>
                     <RequiresUserInput>true</RequiresUserInput>
@@ -178,7 +178,7 @@
                 </SynchronousCommand>
                 <!-- WITHOUT WINDOWS UPDATES -->
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File e:\enable-winrm.ps1</CommandLine>
+                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File e:\enable-winrm.ps1</CommandLine>
                     <Description>Enable WinRM</Description>
                     <Order>99</Order>
                 </SynchronousCommand>
@@ -191,13 +191,13 @@
                     <Description>Enable Microsoft Updates</Description>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File e:\disable-screensaver.ps1</CommandLine>
+                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File e:\disable-screensaver.ps1</CommandLine>
                     <Description>Disable Screensaver</Description>
                     <Order>99</Order>
                     <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File e:\win-updates.ps1 -BeginWithRestart 1</CommandLine>
+                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File e:\win-updates.ps1 -BeginWithRestart 1</CommandLine>
                     <Description>Install Windows Updates</Description>
                     <Order>101</Order>
                     <RequiresUserInput>true</RequiresUserInput>
