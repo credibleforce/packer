@@ -1,11 +1,30 @@
 {
+  "variables": {
+    "autounattend": "../shared/answer_files/2012_r2/Autounattend.xml",
+    "aws_unattend": "../shared/answer_files/amazon/AWS_Unattend.xml",
+    "disk_size": "61440",
+    "disk_type_id": "1",
+    "cpus": "2",
+    "memory": "2048",
+    "headless": "false",
+    "hyperv_switchname": "{{env `hyperv_switchname`}}",
+    "iso_checksum": "md5:8503997171f731d9bd1cb0b0edc31f3d",
+    "iso_url": "http://care.dlservice.microsoft.com/dl/download/6/2/A/62A76ABB-9990-4EFC-A4FE-C7D698DAEB96/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO",
+    "restart_timeout": "5m",
+    "vhv_enable": "false",
+    "virtio_win_iso": "~/virtio-win.iso",
+    "vm_name": "windows_2012",
+    "winrm_timeout": "6h",
+    "vmx_remove_ethernet_interfaces": "false",
+    "winrm_username": "vagrant",
+    "winrm_password": "vagrant"
+  },
   "builders": [
     {
-      "name": "{{user `vm_name`}}",
       "boot_command": "",
       "boot_wait": "6m",
       "communicator": "winrm",
-      "cpus": 2,
+      "cpus": "{{user `cpus`}}",
       "disk_adapter_type": "ide",
       "disk_size": "{{user `disk_size`}}",
       "disk_type_id": "{{user `disk_type_id`}}",
@@ -21,8 +40,11 @@
         "../shared/scripts/enable-tls12.bat",
         "../shared/scripts/unattend.xml",
         "../shared/scripts/win-updates.ps1",
-        "{{ user `aws_unattend` }}"
+        "{{ user `aws_unattend` }}",
+        "../shared/scripts/shutdown.bat"
       ],
+      "shutdown_command": "a:/shutdown.bat",
+      "shutdown_timeout": "3600m",
       "guest_os_type": "windows8srv-64",
       "headless": "{{user `headless`}}",
       "iso_checksum": "{{user `iso_checksum`}}",
@@ -46,6 +68,46 @@
       "winrm_insecure": "true",
       "winrm_use_ntlm": "true",
       "winrm_port": 5986
+    },
+    {
+      "type": "virtualbox-iso",
+      "guest_os_type": "Windows81_64",
+      "vm_name": "{{user `vm_name`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "guest_additions_mode": "disable",
+      "headless": "{{user `headless`}}",
+      "boot_wait": "6m",
+      "disk_size": "{{user `disk_size`}}",
+      "floppy_files": [
+        "{{user `autounattend`}}",
+        "../shared/floppy/WindowsPowershell.lnk",
+        "../shared/floppy/PinTo10.exe",
+        "../shared/scripts/fixnetwork.ps1",
+        "../shared/scripts/disable-screensaver.ps1",
+        "../shared/scripts/disable-winrm.ps1",
+        "../shared/scripts/enable-winrm.ps1",
+        "../shared/scripts/microsoft-updates.bat",
+        "../shared/scripts/enable-tls12.bat",
+        "../shared/scripts/unattend.xml",
+        "../shared/scripts/win-updates.ps1",
+        "../shared/scripts/shutdown.bat",
+        "{{ user `aws_unattend` }}"
+      ],
+      "shutdown_command": "a:/shutdown.bat",
+      "shutdown_timeout": "3600m",
+      "communicator":"winrm",
+      "winrm_username": "{{user `winrm_username`}}",
+      "winrm_password": "{{user `winrm_password`}}",
+      "winrm_timeout": "{{user `winrm_timeout`}}",
+      "winrm_use_ssl": "true",
+      "winrm_insecure": "true",
+      "winrm_use_ntlm": "true",
+      "winrm_port": 5986,
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}"],
+        ["modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}"]
+      ]
     }
   ],
   "post-processors": [
@@ -89,81 +151,21 @@
       "type": "powershell"
     },
     {
-      "script": "../shared/scripts/win-8.1-update-windows-update-agent.ps1",
-      "type": "powershell"
-    },
-    {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
-    },
-    {
-      "script": "../shared/scripts/win-8.1-update-2015.ps1",
-      "type": "powershell"
-    },
-    {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
-    },
-    {
-      "script": "../shared/scripts/win-81-update-2019-09-update-rollup.ps1",
-      "type": "powershell"
-    },
-    {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
-    },
-
-    {
-      "script": "../shared/scripts/win-81-update-2019-10-update-rollup.ps1",
-      "type": "powershell"
-    },
-    {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
-    },
-    {
-      "script": "../shared/scripts/win-81-update-2020-01-update-rollup.ps1",
-      "type": "powershell"
-    },
-    {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
-    },
-    {
-      "script": "../shared/scripts/win-update-net48.ps1",
-      "type": "powershell"
-    },
-    {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
-    },
-    {
-      "script": "../shared/scripts/win-8.1-update-powershell-5.1.ps1",
-      "type": "powershell"
-    },
-    {
-      "restart_timeout": "{{user `restart_timeout`}}",
-      "type": "windows-restart"
-    },
-    {
       "user": "{{user `winrm_username`}}",
       "use_proxy": false,
       "type": "ansible",
       "extra_arguments": [ 
         "-vvvv",
-        "-e","custom_inventory_file=\"{{pwd}}/inventory\"",
-        "-e","ansible_connection=winrm",
-        "-e","ansible_ssh_port=5986",
-        "-e","ansible_ssh_user=\"{{user `winrm_username`}}\"",
-        "-e","ansible_ssh_pass=\"{{user `winrm_password`}}\"",
-        "-e","ansible_winrm_operation_timeout_sec=60",
-        "-e","ansible_winrm_read_timeout_sec=120",
-        "-e","ansible_winrm_scheme=https",
-        "-e","ansible_winrm_transport=ntlm",
-        "-e","ansible_winrm_server_cert_validation=ignore"
+        "-e","custom_inventory_file=\"{{pwd}}/inventory\""
       ],
       "playbook_file": "../../ansible/make_inventory.yml",
       "inventory_directory": "{{pwd}}"
+    },
+    {
+      "inline": [
+          "POWERSHELL_VERSION=\"\" ansible-playbook -i \"{{pwd}}/inventory\" -vvvv -e ansible_connection=winrm -e ansible_ssh_port=5986 -e ansible_user=\"{{user `winrm_username`}}\" -e ansible_ssh_user=\"{{user `winrm_username`}}\" -e ansible_ssh_pass=\"{{user `winrm_password`}}\" -e ansible_winrm_operation_timeout_sec=60 -e ansible_winrm_read_timeout_sec=120 -e ansible_winrm_scheme=https -e ansible_winrm_transport=ntlm -e ansible_winrm_server_cert_validation=ignore \"{{pwd}}/../../ansible/windows_upgrade_powershell.yml\""
+      ],
+      "type": "shell-local"
     },
     {
       "inline": [
@@ -197,25 +199,6 @@
       ],
       "type": "shell-local"
     }
-  ],
-  "variables": {
-    "autounattend": "../shared/answer_files/2012_r2/Autounattend.xml",
-    "aws_unattend": "../shared/answer_files/amazon/AWS_Unattend.xml",
-    "disk_size": "61440",
-    "disk_type_id": "1",
-    "memory": "2048",
-    "headless": "false",
-    "hyperv_switchname": "{{env `hyperv_switchname`}}",
-    "iso_checksum": "md5:8503997171f731d9bd1cb0b0edc31f3d",
-    "iso_url": "http://care.dlservice.microsoft.com/dl/download/6/2/A/62A76ABB-9990-4EFC-A4FE-C7D698DAEB96/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO",
-    "restart_timeout": "5m",
-    "vhv_enable": "false",
-    "virtio_win_iso": "~/virtio-win.iso",
-    "vm_name": "windows_2012",
-    "winrm_timeout": "6h",
-    "vmx_remove_ethernet_interfaces": "false",
-    "winrm_username": "administrator",
-    "winrm_password": "myTempPassword123"
-  }
+  ]
 }
 

@@ -223,7 +223,7 @@
                 <SynchronousCommand wcm:action="add">
                     <CommandLine>cmd.exe /c "wmic useraccount where name='administrator' set PasswordExpires=FALSE && wmic useraccount where name='administrator' set disabled='false'"</CommandLine>
                     <Order>22</Order>
-                    <Description>Disable password expiration for vagrant user</Description>
+                    <Description>Disable password expiration for admin user</Description>
                 </SynchronousCommand>
                 <!-- WITHOUT WINDOWS UPDATES -->
                 <SynchronousCommand wcm:action="add">

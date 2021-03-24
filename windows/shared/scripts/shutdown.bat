@@ -1,0 +1,1 @@
+shutdown /s /t 5 /f /d p:4:1 /c "Packer Shutdown"

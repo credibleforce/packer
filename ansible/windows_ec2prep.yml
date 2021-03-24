@@ -6,6 +6,29 @@
         include_vars: vars/windows.yml
         when: ansible_system == 'Win32NT'
     tasks:
+      # remove any non-administator accounts
+      # - name: 
+      #   win_shell: |
+      #     $AccountsToKeep = @('Administrator','DefaultAccount','Guest','WDAGUtilityAccount')
+      #     Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | Remove-CimInstance
+      #     Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | % { Remove-LocalUser -Name $_.Name }
+      #   register: script_result
+
+      # - name: Script result
+      #   debug:
+      #     msg: 
+      #       - "{{ script_result }}"
+
+      - name: Stop tiledatamodelsvc
+        win_shell: |
+          Stop-Service tiledatamodelsvc
+        register: script_result
+
+      - name: Script result
+        debug:
+          msg: 
+            - "{{ script_result }}"
+
       - name: Install EC2Launch
         win_shell: |
           $EC2LaunchZip = 'https://s3.amazonaws.com/ec2-downloads-windows/EC2Launch/latest/EC2-Windows-Launch.zip'

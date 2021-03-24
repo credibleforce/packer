@@ -11,7 +11,4 @@
           - "Custom Inventory: {{custom_inventory_file}}"
     
     - name: Copy packer inventory to local working directory
-      local_action:
-        module: copy
-        src: "{{inventory_file}}"
-        dest: "{{custom_inventory_file}}"
+      local_action: shell cp -f "{{inventory_file}}" "{{custom_inventory_file}}"

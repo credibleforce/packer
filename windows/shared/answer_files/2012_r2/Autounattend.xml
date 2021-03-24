@@ -18,7 +18,7 @@
                         <CreatePartition wcm:action="add">
                             <Type>Primary</Type>
                             <Order>1</Order>
-                            <Size>350</Size>
+                            <Size>499</Size>
                         </CreatePartition>
                         <CreatePartition wcm:action="add">
                             <Order>2</Order>
@@ -46,25 +46,10 @@
                     <WillWipeDisk>true</WillWipeDisk>
                 </Disk>
             </DiskConfiguration>
-            <ImageInstall>
-                <OSImage>
-                    <InstallFrom>
-                        <!-- <MetaData wcm:action="add">
-                            <Key>/IMAGE/NAME</Key>
-                            <Value>Windows Server 2012 R2 SERVERSTANDARD</Value>
-                        </MetaData> -->
-                         <MetaData wcm:action="add">
-                            <Key>/IMAGE/INDEX</Key>
-                            <Value>2</Value>
-                        </MetaData>
-                    </InstallFrom>
-                    <InstallTo>
-                        <DiskID>0</DiskID>
-                        <PartitionID>2</PartitionID>
-                    </InstallTo>
-                </OSImage>
-            </ImageInstall>
             <UserData>
+                <AcceptEula>true</AcceptEula>
+                <FullName>Vagrant</FullName>
+                <Organization>Vagrant</Organization>
                 <!-- Product Key from http://technet.microsoft.com/en-us/library/jj612867.aspx -->
                 <ProductKey>
                     <!-- Do not uncomment the Key element if you are using trial ISOs -->
@@ -72,10 +57,23 @@
                     <!--<Key>D2N9P-3P6X9-2R39C-7RTCD-MDVJX</Key>-->
                     <WillShowUI>OnError</WillShowUI>
                 </ProductKey>
-                <AcceptEula>true</AcceptEula>
-                <FullName>Vagrant</FullName>
-                <Organization>Vagrant</Organization>
             </UserData>
+            <ImageInstall>
+                <OSImage>
+                    <InstallTo>
+                        <DiskID>0</DiskID>
+                        <PartitionID>2</PartitionID>
+                    </InstallTo>
+                    <WillShowUI>OnError</WillShowUI>
+                    <InstallToAvailablePartition>false</InstallToAvailablePartition>
+                    <InstallFrom>
+                        <MetaData wcm:action="add">
+                            <Key>/IMAGE/INDEX</Key>
+                            <Value>2</Value>
+                        </MetaData>
+                    </InstallFrom>
+                </OSImage>
+            </ImageInstall>
         </component>
     </settings>
     <settings pass="generalize">
@@ -110,12 +108,11 @@
         <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
             <AutoLogon>
                 <Password>
-                    <Value>myTempPassword123</Value>
+                    <Value>vagrant</Value>
                     <PlainText>true</PlainText>
                 </Password>
+                <Username>vagrant</Username>
                 <Enabled>true</Enabled>
-                <Username>administrator</Username>
-                <LogonCount>99</LogonCount>
             </AutoLogon>
             <FirstLogonCommands>
                 <SynchronousCommand wcm:action="add">
@@ -167,9 +164,9 @@
                     <Description>Disable Hibernation Mode</Description>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c "wmic useraccount where name='administrator' set PasswordExpires=FALSE && wmic useraccount where name='administrator' set disabled='false'"</CommandLine>
+                    <CommandLine>cmd.exe /c "wmic useraccount where name='administrator' set PasswordExpires=FALSE && wmic useraccount where name='administrator' set disabled='false' && net user Administrator /logonpasswordchg:no"</CommandLine>
                     <Order>10</Order>
-                    <Description>Disable password expiration for vagrant user</Description>
+                    <Description>Disable password expiration for admin user</Description>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
                     <Description>Enable TLS1.2 and Disable Legacy Protocols SSLv3,TLSv1,TLSv1.1</Description>
@@ -212,9 +209,21 @@
             </OOBE>
             <UserAccounts>
                 <AdministratorPassword>
-                    <Value>myTempPassword123</Value>
+                    <Value>vagrant</Value>
                     <PlainText>true</PlainText>
                 </AdministratorPassword>
+                <LocalAccounts>
+                    <LocalAccount wcm:action="add">
+                        <Password>
+                            <Value>vagrant</Value>
+                            <PlainText>true</PlainText>
+                        </Password>
+                        <Group>administrators</Group>
+                        <DisplayName>Vagrant</DisplayName>
+                        <Name>vagrant</Name>
+                        <Description>Vagrant User</Description>
+                    </LocalAccount>
+                </LocalAccounts>
             </UserAccounts>
             <RegisteredOwner/>
         </component>

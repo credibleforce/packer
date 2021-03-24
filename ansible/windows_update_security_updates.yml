@@ -5,18 +5,26 @@
         set_fact:
           retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
         
-      - name: Install only security updates
+      - name: Install updates
         win_updates:
           category_names:
-          - SecurityUpdates
+            - UpdateRollups
+            - Updates
+            - Drivers
+            - FeaturePacks
+            - Security Updates
+            - CriticalUpdates
           state: installed
-          log_path: "c:/ansible_win_update.log"
-          blacklist:
-            - Windows Malicious Software Removal Tool for Windows
-            - \d{4}-\d{2} Cumulative Update for Windows Server 2016
-            - \d{4}-\d{2} Security Monthly Quality Rollup
-            - \d{4}-\d{2} Servicing Stack Update
-            - \d{4}-\d{2} Security and Quality Rollup for .NET Framework
+          log_path: "c:/ansible_win_security_update.log"
+          whitelist:
+            - \d{4}-\d{2} Cumulative Update for Windows .*
+            - Security Update for Windows .*
+            - \d{4}-\d{2} Update for Windows .*
+            - Update for Windows .*
+            - Windows Malicious Software .*
+            - Security Intelligence Update for Microsoft Defender Antivirus .*
+            - \d{4}-\d{2} Cumulative Security Update for Internet Explorer .*
+            - \d{4}-\d{2} Security and Quality Rollup for .NET Framework .*
           use_scheduled_task: yes
         async: 5400
         poll: 10

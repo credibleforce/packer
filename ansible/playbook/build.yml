@@ -271,9 +271,11 @@
           $admin = [adsi]("WinNT://./{{ windows.local_admin_user }}, user")
           $admin.PSBase.Invoke("SetPassword", "{{ windows.local_admin_password }}")
           
-          # update nuget
+          # add psgallery
           Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
-          Set-PSRepository -Name PSGallery -Trusted
+          if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
+            Set-PackageSource -Name PSGallery -Trusted -Force 
+          }
         when: ansible_system == 'Win32NT'
     
       - name: "Change the hostname on Windows"
