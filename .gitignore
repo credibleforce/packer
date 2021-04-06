@@ -22,3 +22,5 @@ output-*/
 ansible/inventory/*.yml
 vagrant/vmlist.txt
 inventory
+vagrant/settings.yml
+ansible/vars/lab.yml

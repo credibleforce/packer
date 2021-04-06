@@ -1,82 +1,79 @@
 ---
-  - hosts: all
-    gather_facts: True
-    pre_tasks:
-      - name: Windows Variable
-        include_vars: vars/windows.yml
-        when: ansible_system == 'Win32NT'
-    tasks:
+- hosts: all
+  gather_facts: true
+  pre_tasks:
+    - name: Windows Variable
+      include_vars: vars/lab.yml
+      when: ansible_system == 'Win32NT'
+  tasks:
 
-      - name: Setup First Boot Task
-        win_shell: |
-          $taskName = "InitialSetup"
-          $task = Get-ScheduledJob -Name $taskName  -ErrorAction SilentlyContinue
-          if ($task -ne $null)
-          {
-              Unregister-ScheduledJob $task  -Confirm:$false
-              Write-Host "Old $taskName job has been unregistered"; Write-Host;
-          }
+    - name: Setup First Boot Task
+      win_shell: |
+        $taskName = "InitialSetup"
+        $task = Get-ScheduledJob -Name $taskName  -ErrorAction SilentlyContinue
+        if ($task -ne $null)
+        {
+            Unregister-ScheduledJob $task  -Confirm:$false
+            Write-Host "Old $taskName job has been unregistered"; Write-Host;
+        }
 
-          $trigger = New-JobTrigger -AtStartup -RandomDelay 00:00:30;
-          $options = New-ScheduledJobOption -StartIfOnBattery  -RunElevated;
+        $trigger = New-JobTrigger -AtStartup -RandomDelay 00:00:30;
+        $options = New-ScheduledJobOption -StartIfOnBattery  -RunElevated;
 
-          Write-Host "Registering new $taskName job";
-          Register-ScheduledJob -Name $taskName  -Trigger $trigger  -ScheduledJobOption $options `
-              -ScriptBlock {
-                # remove any non-default local accounts
-                $AccountsToKeep = @('{{ windows.local_admin_user }}','Administrator','DefaultAccount','Guest','WDAGUtilityAccount')
-                Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | Remove-CimInstance
-                Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | % { Remove-LocalUser -Name $_.Name }
+        Write-Host "Registering new $taskName job";
+        Register-ScheduledJob -Name $taskName  -Trigger $trigger  -ScheduledJobOption $options `
+            -ScriptBlock {
+              # remove any non-default local accounts
+              $AccountsToKeep = @('{{ lab.settings.windows.win_admin_user }}','Administrator','DefaultAccount','Guest','WDAGUtilityAccount')
+              Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | Remove-CimInstance
+              Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | % { Remove-LocalUser -Name $_.Name }
 
-                net user {{ windows.local_admin_user }} "{{ windows.local_admin_password }}"
-                net user {{ windows.local_admin_user }} /active:yes
-                net user {{ windows.local_admin_user }} /logonpasswordchg:no
-                wmic USERACCOUNT WHERE "Name='{{ windows.local_admin_user }}'" SET PasswordExpires=FALSE
-                
-                # remove scheduled job
-                Unregister-ScheduledJob InitialSetup  -Confirm:$false
-              }
+              net user {{ lab.settings.windows.win_admin_user }} "{{ lab.settings.windows.win_admin_password }}"
+              net user {{ lab.settings.windows.win_admin_user }} /active:yes
+              net user {{ lab.settings.windows.win_admin_user }} /logonpasswordchg:no
+              wmic USERACCOUNT WHERE "Name='{{ lab.settings.windows.win_admin_user }}'" SET PasswordExpires=FALSE
 
-          $accountId = "NT AUTHORITY\SYSTEM";
-          $principal = New-ScheduledTaskPrincipal -UserID $accountId -LogonType ServiceAccount  -RunLevel Highest;
+              # remove scheduled job
+              Unregister-ScheduledJob InitialSetup  -Confirm:$false
+            }
 
-          $psSobsSchedulerPath = "\Microsoft\Windows\PowerShell\ScheduledJobs";
-          $someResult = Set-ScheduledTask -TaskPath $psSobsSchedulerPath -TaskName $taskName  -Principal $principal
-        register: script_result
+        $accountId = "NT AUTHORITY\SYSTEM";
+        $principal = New-ScheduledTaskPrincipal -UserID $accountId -LogonType ServiceAccount  -RunLevel Highest;
 
-      - name: Script result
-        debug:
-          msg: 
-            - "{{ script_result }}"
+        $psSobsSchedulerPath = "\Microsoft\Windows\PowerShell\ScheduledJobs";
+        $someResult = Set-ScheduledTask -TaskPath $psSobsSchedulerPath -TaskName $taskName  -Principal $principal
+      register: script_result
 
-      - name: Run sysprep
-        win_shell: |
-          Stop-Service tiledatamodelsvc -ErrorAction SilentlyContinue
+    - name: Script result
+      debug:
+        msg:
+          - "{{ script_result }}"
 
-          # Prepare the custom unattend if it exists
-          $windir = $env:windir
-          $process = "$windir\system32\sysprep\sysprep.exe"
-          $args = ""
-          if((Test-Path "A:\unattend.xml")){
-            $args = "/oobe /generalize /quiet /quit /mode:vm /unattend:a:\unattend.xml"
-          }else{
-            $args = "/oobe /generalize /quiet /quit /mode:vm"
-          }
-          $result = start-process -wait $process $args
-          write-output $result
+    - name: Run sysprep
+      win_shell: |
+        Stop-Service tiledatamodelsvc -ErrorAction SilentlyContinue
 
-          Get-Content -Path "c:\Windows\Panther\Setuperr.log"  | % { write-output $_ }
+        # Prepare the custom unattend if it exists
+        $windir = $env:windir
+        $process = "$windir\system32\sysprep\sysprep.exe"
+        $args = ""
+        if((Test-Path "A:\unattend.xml")){
+          $args = "/oobe /generalize /quiet /quit /mode:vm /unattend:a:\unattend.xml"
+        }else{
+          $args = "/oobe /generalize /quiet /quit /mode:vm"
+        }
+        $result = start-process -wait $process $args
+        write-output $result
 
-          # Start shutdown in background (avoid shutdown_command vmware bug)
-          $proc = "C:\Windows\System32\shutdown.exe"
-          $args = "/s /t 120 /f /d p:4:1"
-          start-process $proc $args
-        register: script_result
+        Get-Content -Path "c:\Windows\Panther\Setuperr.log"  | % { write-output $_ }
 
-      - name: Script result
-        debug: 
-          msg:
-            - "{{ script_result }}"
+        # Start shutdown in background (avoid shutdown_command vmware bug)
+        $proc = "C:\Windows\System32\shutdown.exe"
+        $args = "/s /t 120 /f /d p:4:1"
+        start-process $proc $args
+      register: script_result
 
-
-          
+    - name: Script result
+      debug:
+        msg:
+          - "{{ script_result }}"

@@ -1,133 +1,128 @@
 ---
-  - hosts: all
-    gather_facts: True
-    pre_tasks:
-      - name: Windows Variable
-        include_vars: vars/windows.yml
-        when: ansible_system == 'Win32NT'
-    tasks:
-      - name: Update to .net48
-        win_shell: |
-          [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
-          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+- hosts: all
+  gather_facts: true
+  pre_tasks:
+    - name: Windows Variable
+      include_vars: vars/lab.yml
+      when: ansible_system == 'Win32NT'
+  tasks:
+    - name: Update to .net48
+      win_shell: |
+        [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-          Function Start-Process-Legacy{
-              [CmdletBinding()]
-              param(
-                  [Parameter(Mandatory=$true)]
-                  [string]$FilePath,
-                  [Parameter(Mandatory=$false)]
-                  [string]$ArgumentList="",
-                  [Parameter(Mandatory=$false)]
-                  [switch]$Wait = $false
-              )
-              
-              $pinfo = New-Object System.Diagnostics.ProcessStartInfo
-              $pinfo.FileName = $FilePath
-              $pinfo.RedirectStandardError = $true
-              $pinfo.RedirectStandardOutput = $true
-              $pinfo.UseShellExecute = $false
-              $pinfo.Arguments = $ArgumentList
-              $p = New-Object System.Diagnostics.Process
-              $p.StartInfo = $pinfo
-              $p.Start() | Out-Null
-              if($Wait){$p.WaitForExit(); return $p.ExitCode}
-              return 0;
-          }
+        Function Start-Process-Legacy{
+            [CmdletBinding()]
+            param(
+                [Parameter(Mandatory=$true)]
+                [string]$FilePath,
+                [Parameter(Mandatory=$false)]
+                [string]$ArgumentList="",
+                [Parameter(Mandatory=$false)]
+                [switch]$Wait = $false
+            )
+            
+            $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+            $pinfo.FileName = $FilePath
+            $pinfo.RedirectStandardError = $true
+            $pinfo.RedirectStandardOutput = $true
+            $pinfo.UseShellExecute = $false
+            $pinfo.Arguments = $ArgumentList
+            $p = New-Object System.Diagnostics.Process
+            $p.StartInfo = $pinfo
+            $p.Start() | Out-Null
+            if($Wait){$p.WaitForExit(); return $p.ExitCode}
+            return 0;
+        }
 
-          New-Item -Path "C:\Updates" -ItemType Directory -ErrorAction SilentlyContinue
+        New-Item -Path "C:\Updates" -ItemType Directory -ErrorAction SilentlyContinue
 
-          Write-Output "$(Get-Date -Format G): Downloading .NET Framework 4.8"
-          (New-Object Net.WebClient).DownloadFile("https://download.visualstudio.microsoft.com/download/pr/014120d7-d689-4305-befd-3cb711108212/0fd66638cde16859462a6243a4629a50/ndp48-x86-x64-allos-enu.exe", "C:\Updates\ndp48-x86-x64-allos-enu.exe")
-          
-          Write-Output "$(Get-Date -Format G): Installing .NET Framework 4.8"
-          $ExitCode = Start-Process-Legacy -FilePath "C:\Updates\ndp48-x86-x64-allos-enu.exe" -ArgumentList "/passive /norestart" -Wait
-          Write-Output "Result: $ExitCode"
+        Write-Output "$(Get-Date -Format G): Downloading .NET Framework 4.8"
+        (New-Object Net.WebClient).DownloadFile("https://download.visualstudio.microsoft.com/download/pr/014120d7-d689-4305-befd-3cb711108212/0fd66638cde16859462a6243a4629a50/ndp48-x86-x64-allos-enu.exe", "C:\Updates\ndp48-x86-x64-allos-enu.exe")
+        
+        Write-Output "$(Get-Date -Format G): Installing .NET Framework 4.8"
+        $ExitCode = Start-Process-Legacy -FilePath "C:\Updates\ndp48-x86-x64-allos-enu.exe" -ArgumentList "/passive /norestart" -Wait
+        Write-Output "Result: $ExitCode"
 
-          Remove-Item -LiteralPath "C:\Updates" -Force -Recurse
-          Write-Output "$(Get-Date -Format G): Finished installing .NET Framework 4.8. The VM will now reboot and continue the installation process."
-        register: script_result
+        Remove-Item -LiteralPath "C:\Updates" -Force -Recurse
+        Write-Output "$(Get-Date -Format G): Finished installing .NET Framework 4.8. The VM will now reboot and continue the installation process."
+      register: script_result
 
-      - name: Script result
-        debug:
-          msg: 
-            - "{{ script_result }}"
-      
-      - name: Reboot host if required
-        win_reboot:
-          reboot_timeout: 3600
-          post_reboot_delay: 90
+    - name: Script result
+      debug:
+        msg: 
+          - "{{ script_result }}"
+    
+    - name: Reboot host if required
+      win_reboot:
+        reboot_timeout: 3600
+        post_reboot_delay: 90
 
-      - name: Wait for system to become reachable over WinRM
-        wait_for_connection:
-          timeout: 900
-          sleep: 60
-          delay: 120
+    - name: Wait for system to become reachable over WinRM
+      wait_for_connection:
+        timeout: 900
+        sleep: 60
+        delay: 120
 
-      - name: Update powershell to 5.1
-        win_shell: |
-          [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
-          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    - name: Update powershell to 5.1
+      win_shell: |
+        [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-          New-Item -Path "C:\Updates" -ItemType Directory -ErrorAction SilentlyContinue
+        New-Item -Path "C:\Updates" -ItemType Directory -ErrorAction SilentlyContinue
 
-          $updates = "C:\Updates"
-          $url = 'https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win8.1AndW2K12R2-KB3191564-x64.msu'
-          $checksum = 'a8d788fa31b02a999cc676fb546fc782e86c2a0acd837976122a1891ceee42c0'
-          $output = "$updates\Win8.1AndW2K12R2-KB3191564-x64.msu"
+        $updates = "C:\Updates"
+        $url = 'https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win8.1AndW2K12R2-KB3191564-x64.msu'
+        $checksum = 'a8d788fa31b02a999cc676fb546fc782e86c2a0acd837976122a1891ceee42c0'
+        $output = "$updates\Win8.1AndW2K12R2-KB3191564-x64.msu"
 
-          # Ensure the Windows Update service is running.
-          Get-Service -Name wuauserv | Start-Service
+        # Ensure the Windows Update service is running.
+        Get-Service -Name wuauserv | Start-Service
 
-          # Download the update.
-          (New-Object System.Net.WebClient).DownloadFile($url, $output)
+        # Download the update.
+        (New-Object System.Net.WebClient).DownloadFile($url, $output)
 
-          # Validate the checksum.
-          if ((Get-FileHash -Path $output -Algorithm SHA256).Hash.ToLower() -ne $checksum) {
-              Write-Output "Checksum does not match."
-              exit 1
-          }
+        # Validate the checksum.
+        if ((Get-FileHash -Path $output -Algorithm SHA256).Hash.ToLower() -ne $checksum) {
+            Write-Output "Checksum does not match."
+            exit 1
+        }
 
-          # Extract the contents of the msu package.
-          $process = "C:\Windows\System32\wusa.exe"
-          $args = "$updates\Win8.1AndW2K12R2-KB3191564-x64.msu /extract:$updates"
-          $ExitCode = Start-Process -FilePath $process -ArgumentList $args -wait
-          Write-Output "Result: $ExitCode"
+        # Extract the contents of the msu package.
+        $process = "C:\Windows\System32\wusa.exe"
+        $args = "$updates\Win8.1AndW2K12R2-KB3191564-x64.msu /extract:$updates"
+        $ExitCode = Start-Process -FilePath $process -ArgumentList $args -wait
+        Write-Output "Result: $ExitCode"
 
-          dir $updates
+        dir $updates
 
-          # Install the cab file wih Dism.
-          $process = "C:\Windows\System32\Dism.exe"
-          $args = "/online /add-package /PackagePath:$updates\WindowsBlue-KB3191564-x64.cab /Quiet /NoRestart"
-          $ExitCode = Start-Process -FilePath $process -ArgumentList $args -wait
-          Write-Output "Result: $ExitCode"
-          # Returns 3010 to signify "reboot required"
+        # Install the cab file wih Dism.
+        $process = "C:\Windows\System32\Dism.exe"
+        $args = "/online /add-package /PackagePath:$updates\WindowsBlue-KB3191564-x64.cab /Quiet /NoRestart"
+        $ExitCode = Start-Process -FilePath $process -ArgumentList $args -wait
+        Write-Output "Result: $ExitCode"
+        # Returns 3010 to signify "reboot required"
 
-          # Stop the Windows Update service.
-          Get-Service -Name wuauserv | Stop-Service
+        # Stop the Windows Update service.
+        Get-Service -Name wuauserv | Stop-Service
 
-          Remove-Item -LiteralPath $updates -Force -Recurse
-          Write-Output "$(Get-Date -Format G): Finished installing Windows Management Framework 5.1. The VM will now reboot and continue the installation process."
-          
-        register: script_result
+        Remove-Item -LiteralPath $updates -Force -Recurse
+        Write-Output "$(Get-Date -Format G): Finished installing Windows Management Framework 5.1. The VM will now reboot and continue the installation process."
+        
+      register: script_result
 
-      - name: Script result
-        debug:
-          msg: 
-            - "{{ script_result }}"
-      
-      - name: Reboot host if required
-        win_reboot:
-          reboot_timeout: 3600
-          post_reboot_delay: 90
+    - name: Script result
+      debug:
+        msg: 
+          - "{{ script_result }}"
 
-      - name: Wait for system to become reachable over WinRM
-        wait_for_connection:
-          timeout: 900
-          sleep: 60
-          delay: 120
-      
-     
-     
+    - name: Reboot host if required
+      win_reboot:
+        reboot_timeout: 3600
+        post_reboot_delay: 90
 
-          
+    - name: Wait for system to become reachable over WinRM
+      wait_for_connection:
+        timeout: 900
+        sleep: 60
+        delay: 120

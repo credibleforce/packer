@@ -1,78 +1,75 @@
 ---
-  - hosts: all
-    gather_facts: True
-    pre_tasks:
-      - name: Windows Variable
-        include_vars: vars/windows.yml
-        when: ansible_system == 'Win32NT'
-    tasks:
-      # remove any non-administator accounts
-      # - name: 
-      #   win_shell: |
-      #     $AccountsToKeep = @('Administrator','DefaultAccount','Guest','WDAGUtilityAccount')
-      #     Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | Remove-CimInstance
-      #     Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | % { Remove-LocalUser -Name $_.Name }
-      #   register: script_result
+- hosts: all
+  gather_facts: true
+  pre_tasks:
+    - name: Windows Variable
+      include_vars: vars/lab.yml
+      when: ansible_system == 'Win32NT'
+  tasks:
+    # remove any non-administator accounts
+    # - name: 
+    #   win_shell: |
+    #     $AccountsToKeep = @('Administrator','DefaultAccount','Guest','WDAGUtilityAccount')
+    #     Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | Remove-CimInstance
+    #     Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | % { Remove-LocalUser -Name $_.Name }
+    #   register: script_result
 
-      # - name: Script result
-      #   debug:
-      #     msg: 
-      #       - "{{ script_result }}"
+    # - name: Script result
+    #   debug:
+    #     msg: 
+    #       - "{{ script_result }}"
 
-      - name: Stop tiledatamodelsvc
-        win_shell: |
-          Stop-Service tiledatamodelsvc
-        register: script_result
+    - name: Stop tiledatamodelsvc
+      win_shell: |
+        Stop-Service tiledatamodelsvc
+      register: script_result
 
-      - name: Script result
-        debug:
-          msg: 
-            - "{{ script_result }}"
+    - name: Script result
+      debug:
+        msg: 
+          - "{{ script_result }}"
 
-      - name: Install EC2Launch
-        win_shell: |
-          $EC2LaunchZip = 'https://s3.amazonaws.com/ec2-downloads-windows/EC2Launch/latest/EC2-Windows-Launch.zip'
-          $OutPath = "C:\ProgramData\Amazon\EC2-Windows\EC2-Windows-Launch.zip"
-          $EC2LaunchInstall = 'https://s3.amazonaws.com/ec2-downloads-windows/EC2Launch/latest/install.ps1'
-          $OutInstallPath = "C:\ProgramData\Amazon\EC2-Windows\install.ps1"
+    - name: Install EC2Launch
+      win_shell: |
+        $EC2LaunchZip = 'https://s3.amazonaws.com/ec2-downloads-windows/EC2Launch/latest/EC2-Windows-Launch.zip'
+        $OutPath = "C:\ProgramData\Amazon\EC2-Windows\EC2-Windows-Launch.zip"
+        $EC2LaunchInstall = 'https://s3.amazonaws.com/ec2-downloads-windows/EC2Launch/latest/install.ps1'
+        $OutInstallPath = "C:\ProgramData\Amazon\EC2-Windows\install.ps1"
 
-          $LPath = 'C:\ProgramData\Amazon\EC2-Windows\Launch'
-          if(!(Test-Path $LPath)){
-              New-Item -ItemType Directory -Force -Path $LPath
-          }
+        $LPath = 'C:\ProgramData\Amazon\EC2-Windows\Launch'
+        if(!(Test-Path $LPath)){
+            New-Item -ItemType Directory -Force -Path $LPath
+        }
 
-          Invoke-WebRequest -Uri $EC2LaunchZip -OutFile $OutPath
-          Invoke-WebRequest -Uri $EC2LaunchInstall -OutFile $OutInstallPath
-          & $OutInstallPath
+        Invoke-WebRequest -Uri $EC2LaunchZip -OutFile $OutPath
+        Invoke-WebRequest -Uri $EC2LaunchInstall -OutFile $OutInstallPath
+        & $OutInstallPath
 
-          # Expand-Archive -Path $OutPath -DestinationPath $LPath
-          Remove-Item $OutPath
+        # Expand-Archive -Path $OutPath -DestinationPath $LPath
+        Remove-Item $OutPath
 
-          # Prepare the custom unattend if it exists
-          if(Test-Path "A:\AWS_Unattend.xml"){
-              Remove-Item -Path $("{0}\Sysprep\Unattend.xml" -f $LPath)
-              Copy-Item -Path "A:\AWS_Unattend.xml" $("{0}\Sysprep\Unattend.xml" -f $LPath)
-          }
+        # Prepare the custom unattend if it exists
+        if(Test-Path "A:\AWS_Unattend.xml"){
+            Remove-Item -Path $("{0}\Sysprep\Unattend.xml" -f $LPath)
+            Copy-Item -Path "A:\AWS_Unattend.xml" $("{0}\Sysprep\Unattend.xml" -f $LPath)
+        }
 
-        register: script_result
+      register: script_result
 
-      - name: Script result
-        debug: var=script_result
+    - name: Script result
+      debug: var=script_result
 
-      - name: Update EC2Launch Configuration
-        win_template:
-          src: "templates/LaunchConfig.json.j2"
-          dest: 'C:\ProgramData\Amazon\EC2-Windows\Launch\config\LaunchConfig.json'
-        when: ansible_system == 'Win32NT'
+    - name: Update EC2Launch Configuration
+      win_template:
+        src: "templates/LaunchConfig.json.j2"
+        dest: 'C:\ProgramData\Amazon\EC2-Windows\Launch\config\LaunchConfig.json'
+      when: ansible_system == 'Win32NT'
 
-      - name: Run EC2Launch Setup
-        win_shell: |
-          & C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeInstance.ps1 -Schedule
-          & C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\SysprepInstance.ps1 -NoShutdown
-        register: script_result
+    - name: Run EC2Launch Setup
+      win_shell: |
+        & C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeInstance.ps1 -Schedule
+        & C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\SysprepInstance.ps1 -NoShutdown
+      register: script_result
 
-      - name: Script result
-        debug: var=script_result
-
-
-          
+    - name: Script result
+      debug: var=script_result

@@ -14,6 +14,8 @@ class Hash
     end
 end
 
+$settings = YAML.load_file("settings.yml")
+
 $private_key_path = File.join(Dir.home, ".ssh", "id_rsa")
 $public_key_path = File.join(Dir.home, ".ssh", "id_rsa.pub")
 $insecure_key_path = File.join(Dir.home, ".vagrant.d", "insecure_private_key")
@@ -54,6 +56,8 @@ $win16_hosts_override =                  [
 
 $win19_hosts_override =                  [
                                             # win19 server
+                                            #{"name"=>"win19-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
+                                            #{"name"=>"win19-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
                                             #{"name"=>"win19-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
                                         ]
 
@@ -69,9 +73,9 @@ $win7_hosts_override =                   [
 
 $centos_hosts_override =                 [
                                             # ansible
-                                            {"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
+                                            #{"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
                                             # prowler
-					    {"name"=>"prowler-srv1","prod_ip"=>"172.21.0.31","role"=>"prowler"},
+					                        #{"name"=>"prowler-srv1","prod_ip"=>"172.21.0.31","role"=>"prowler"},
                                         ]
 $splunk_hosts_override =                [
                                             # splunk
@@ -100,37 +104,37 @@ $pfsense_hosts_override =                   [
 # HOST HASHTABLES #
 $centos_extra_vars = {
     "ansible_ssh_port"=>"22",
-    "ansible_ssh_user"=>"vagrant",
-    "ansible_ssh_pass"=>"vagrant",
-    "ansible_become_password"=>"vagrant",
+    "ansible_ssh_user"=>$settings['centos_user'],
+    "ansible_ssh_pass"=>$settings['centos_password'],
+    "ansible_become_password"=>$settings['centos_password'],
 }
 
 $splunk_extra_vars = {
     "ansible_ssh_port"=>"22",
-    "ansible_ssh_user"=>"vagrant",
-    "ansible_ssh_pass"=>"vagrant",
-    "ansible_become_password"=>"vagrant",
+    "ansible_ssh_user"=>$settings['centos_user'],
+    "ansible_ssh_pass"=>$settings['centos_password'],
+    "ansible_become_password"=>$settings['centos_password'],
 }
 
 $pfsense_extra_vars = {
     "ansible_ssh_port"=>"22",
-    "ansible_ssh_user"=>"vagrant",
-    "ansible_ssh_pass"=>"vagrant",
-    "ansible_become_password"=>"vagrant",
+    "ansible_ssh_user"=>$settings['pfsense_user'],
+    "ansible_ssh_pass"=>$settings['pfsense_password'],
+    "ansible_become_password"=>$settings['pfsense_password'],
 }
 
 $kali_extra_vars = {
     "ansible_ssh_port"=>"22",
-    "ansible_ssh_user"=>"kali",
-    "ansible_ssh_pass"=>"kali",
-    "ansible_become_password"=>"kali",
+    "ansible_ssh_user"=>$settings['kali_user'],
+    "ansible_ssh_pass"=>$settings['kali_password'],
+    "ansible_become_password"=>$settings['kali_password'],
 }
 
 $windows_extra_vars = {
     "ansible_connection"=>"winrm",
     "ansible_ssh_port"=>"5986",
-    "ansible_ssh_user"=>"Administrator",
-    "ansible_ssh_pass"=>"myTempPassword123",
+    "ansible_ssh_user"=>$settings['win_admin_user'],
+    "ansible_ssh_pass"=>$settings['win_admin_password'],
     "ansible_winrm_transport"=>"ntlm",
     "ansible_winrm_server_cert_validation"=>"ignore",
     "ansible_winrm_scheme"=>"https",
@@ -162,10 +166,6 @@ $ansible_inventory = {
 $roles = {}
 $roles_prod = {
     "windows" => {
-        # "become" => "no",
-        # "vars" => {
-        #         "ansible_become" => "no"
-        #     },
         "children" => {
 
                 }
