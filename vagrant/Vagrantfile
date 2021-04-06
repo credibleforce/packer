@@ -14,7 +14,7 @@ class Hash
     end
 end
 
-$settings = YAML.load_file("settings.yml")
+$settings = YAML.load_file("lab_settings.yml")
 
 $private_key_path = File.join(Dir.home, ".ssh", "id_rsa")
 $public_key_path = File.join(Dir.home, ".ssh", "id_rsa.pub")
