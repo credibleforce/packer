@@ -11,7 +11,6 @@
         template:
           src: ../templates/lab.yml.j2
           dest: "{{ playbook_dir }}/../vars/lab.yml"
-          mode: 
 
   # update the list of known_hosts so ssh will not fail to connect
   - hosts: all
