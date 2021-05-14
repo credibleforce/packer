@@ -264,13 +264,13 @@
       - name: Lab variables
         include_vars: ../vars/lab.yml
 
-      - name: Windows Variable
-        include_vars: ../vars/windows.yml
-        when: ansible_system == 'Win32NT'
+      # - name: Windows Variable
+      #   include_vars: ../vars/windows.yml
+      #   when: ansible_system == 'Win32NT'
       
-      - name: Linux Variable
-        include_vars: ../vars/linux.yml
-        when: ansible_system == 'Linux'
+      # - name: Linux Variable
+      #   include_vars: ../vars/linux.yml
+      #   when: ansible_system == 'Linux'
     post_tasks:
     tasks:
       - name: Distribution

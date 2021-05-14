@@ -1,0 +1,29 @@
+---
+lab:
+    settings:
+        kali:
+            ansible_ssh_user: kali
+        centos:
+            ansible_ssh_user: vagrant
+        windows:
+            internal_domain: lab.lan
+            win_dns_domain: lab.lan
+            win_netbios_domain: LAB
+            win_admin_user: administrator
+            win_admin_password: myTempPassword123
+            win_ca_common_name: LAB-PKI
+            lab_base_tld: lan
+            lab_base_name: lab
+            ansible_connection: winrm
+            ansible_ssh_port: 5986
+            ansible_ssh_user: administrator
+            ansible_ssh_pass: myTempPassword123
+            ansible_winrm_transport: ntlm
+            ansible_winrm_server_cert_validation: ignore
+            ansible_winrm_read_timeout_sec: 600
+        ansible:
+            ansible_ssh_user: vagrant
+            admin_password: 1-ansible-password
+        splunk:
+            ansible_ssh_user: vagrant
+            admin_password: 1-splunk-password
