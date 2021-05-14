@@ -4,7 +4,7 @@
   - hosts: local
     pre_tasks:
       - name: Lab settings variables
-        include_vars: ../../vagrant/settings.yml
+        include_vars: ../../vagrant/lab_settings.yml
     gather_facts: false
     tasks:
       - name: Create lab settings file
