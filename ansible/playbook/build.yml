@@ -1,7 +1,20 @@
 ---
+  # take the simplified settings file and convert to a "normalized" setting config
+  # this is used to support cross project config
+  - hosts: local
+    pre_tasks:
+      - name: Lab settings variables
+        include_vars: ../../vagrant/lab_settings.yml
+    gather_facts: false
+    tasks:
+      - name: Create lab settings file
+        template:
+          src: ../templates/lab.yml.j2
+          dest: "{{ playbook_dir }}/../vars/lab.yml"
+
   # update the list of known_hosts so ssh will not fail to connect
   - hosts: all
-    gather_facts: False
+    gather_facts: false
     vars:
       ansible_connection: local
       ansible_python_interpreter: "{{ ansible_playbook_python }}"
@@ -16,29 +29,33 @@
         become: false
         register: whoami
 
-      - name: Remove any existing host keys
+      # at build as dns is unavailable we need to ensure we use ansible_host
+      - name: Remove any existing host keys by name and assigned ip
         delegate_to: localhost
         shell: |
-          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ansible_host}}"
-        ignore_errors: yes
-        when: 
+          ssh-keygen -f "~/.ssh/known_hosts" -R "{{inventory_hostname}}"
+          ssh-keygen -f "~/.ssh/known_hosts" -R "{{ansible_host}}"
+          ssh-keygen -f "~/.ssh/known_hosts" -R "{{hostvars[inventory_hostname].prod_ip}}"
+        ignore_errors: true
+        when:
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
-      
+
       - name: get port, default 22
         delegate_to: localhost
         set_fact:
           ansible_ssh_port: "{{ hostvars[inventory_hostname]['ansible_ssh_port'] | default('22') }}"
-        when: 
+        when:
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
-      
-      - name: Ensure ssh host key known
+
+      # at build as dns is unavailable we need to ensure we use ansible_host
+      - name: Ensure ssh host key by ansible_host
         delegate_to: localhost
         lineinfile:
           dest: ~/.ssh/known_hosts
-          create: yes
+          create: true
           state: present
-          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + ansible_host) }}"
-        when: 
+          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + ansible_host, errors='warn') }}"
+        when:
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
 
   # prep ansible server
@@ -56,13 +73,13 @@
           path: "{{ item }}"
           state: absent
         with_items:
-          - ~/.ssh/{{ssh_key_filename}}
-          - ~/.ssh/{{ssh_key_filename}}.pub
+          - ~/.ssh/{{ ssh_key_filename }}
+          - ~/.ssh/{{ ssh_key_filename }}.pub
 
       - name: Generate local lab ssh key
         delegate_to: localhost
         openssh_keypair:
-          path: "~/.ssh/{{ssh_key_filename}}"
+          path: "~/.ssh/{{ ssh_key_filename }}"
           type: rsa
           size: 4096
           state: present
@@ -73,7 +90,7 @@
           path: "~/.ssh"
           state: directory
           mode: 0700
-      
+
       - name: Add lab SSH private key
         copy:
           src: "~/.ssh/{{ ssh_key_filename }}"
@@ -91,14 +108,14 @@
         yum:
           name:
             - epel-release
-          
+
       - name: Install Ansible
         become: true
         yum:
           name:
             - ansible
           state: present
-        
+
       - name: Install Ansible Python Requirements
         become: true
         pip:
@@ -106,22 +123,34 @@
             - requests
             - pywinrm
           state: present
-        
+
       - name: Install ansible-galaxy collections
         shell:
           ansible-galaxy collection install ansible.windows community.windows
-      
+
       - name: Run whoami without become.
         command: whoami
         changed_when: false
         become: false
         register: whoami
-          
-      - name: Add lab key to authorized key 
+
+      - name: Add lab key to authorized key
         authorized_key:
           user: "{{ whoami.stdout }}"
           state: present
-          key: "{{ lookup('file', '~/.ssh/{{ssh_key_filename}}.pub') }}"
+          key: "{{ lookup('file', '~/.ssh/{{ ssh_key_filename }}.pub') }}"
+
+      - name: Create lab inventory directory
+        file:
+          path: "~/deployment/ansible"
+          state: directory
+          mode: 0700
+
+      - name: Add lab inventory file
+        copy:
+          src: ../inventory/lab.yml
+          dest: "~/deployment/ansible/inventory.yml"
+          mode: 0600
 
   # update pfsense with dhcp static reservation and dns entries for hosts
   - hosts: pfsense
@@ -147,7 +176,7 @@
           input_type: xml
           pretty_print: yes
           add_children:
-            - "<domain>{{ lab.dns_name }}</domain>"
+            - "<domain>{{ lab.settings.windows.internal_domain }}</domain>"
 
       # remove sshguard whitelist
       - name: Remove sshguard_whitelist setting
@@ -202,7 +231,7 @@
           input_type: xml
           pretty_print: yes
           add_children:
-            "<hosts><host>{{ hostvars[item]['inventory_hostname'] }}</host><domain>{{ lab.dns_name }}</domain><ip>{{ hostvars[item]['prod_ip'] }}</ip><descr></descr><aliases></aliases></hosts>"
+            "<hosts><host>{{ hostvars[item]['inventory_hostname'] }}</host><domain>{{ lab.settings.windows.internal_domain }}</domain><ip>{{ hostvars[item]['prod_ip'] }}</ip><descr></descr><aliases></aliases></hosts>"
         with_inventory_hostnames:
           - all:!local
 
@@ -258,14 +287,20 @@
 
       - name: "Windows Base Provisioning"
         win_shell: |
-          Get-LocalUser -Name "Administrator" | Enable-LocalUser
-          $admin = [adsi]("WinNT://./{{ windows.local_admin_user }}, user")
-          $admin.PSBase.Invoke("SetPassword", "{{ windows.local_admin_password }}")
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          Set-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -Type DWord
+          Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -Type DWord
+          Set-ExecutionPolicy RemoteSigned -Scope LocalMachine
           
-          # update nuget
-          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5 -Force
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          if([environment]::OSVersion.version.Major -lt 6) { return }
+          Get-LocalUser -Name "Administrator" | Enable-LocalUser
+          $admin = [adsi]("WinNT://./{{ lab.settings.windows.win_admin_user }}, user")
+          $admin.PSBase.Invoke("SetPassword", "{{ lab.settings.windows.win_admin_password }}")
+          
+          # add psgallery
+          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
+          if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
+            Set-PackageSource -Name PSGallery -Trusted -Force 
+          }
         when: ansible_system == 'Win32NT'
     
       - name: "Change the hostname on Windows"
@@ -311,6 +346,105 @@
         when: 
           - ansible_system == 'Win32NT'
           - res.reboot_required
+
+      - name: "Update WinRM SSL Certificate with Hostname"
+        win_shell: |
+          Function New-LegacySelfSignedCert
+          {
+              Param (
+                  [string]$SubjectName,
+                  [int]$ValidDays = 1095
+              )
+
+              $hostnonFQDN = $env:computerName
+              $hostFQDN = [System.Net.Dns]::GetHostByName(($env:computerName)).Hostname
+              $SignatureAlgorithm = "SHA256"
+
+              $name = New-Object -COM "X509Enrollment.CX500DistinguishedName.1"
+              $name.Encode("CN=$SubjectName", 0)
+
+              $key = New-Object -COM "X509Enrollment.CX509PrivateKey.1"
+              $key.ProviderName = "Microsoft Enhanced RSA and AES Cryptographic Provider"
+              $key.KeySpec = 1
+              $key.Length = 4096
+              $key.SecurityDescriptor = "D:PAI(A;;0xd01f01ff;;;SY)(A;;0xd01f01ff;;;BA)(A;;0x80120089;;;NS)"
+              $key.MachineContext = 1
+              $key.Create()
+
+              $serverauthoid = New-Object -COM "X509Enrollment.CObjectId.1"
+              $serverauthoid.InitializeFromValue("1.3.6.1.5.5.7.3.1")
+              $ekuoids = New-Object -COM "X509Enrollment.CObjectIds.1"
+              $ekuoids.Add($serverauthoid)
+              $ekuext = New-Object -COM "X509Enrollment.CX509ExtensionEnhancedKeyUsage.1"
+              $ekuext.InitializeEncode($ekuoids)
+
+              $cert = New-Object -COM "X509Enrollment.CX509CertificateRequestCertificate.1"
+              $cert.InitializeFromPrivateKey(2, $key, "")
+              $cert.Subject = $name
+              $cert.Issuer = $cert.Subject
+              $cert.NotBefore = (Get-Date).AddDays(-1)
+              $cert.NotAfter = $cert.NotBefore.AddDays($ValidDays)
+
+              $SigOID = New-Object -ComObject X509Enrollment.CObjectId
+              $SigOID.InitializeFromValue(([Security.Cryptography.Oid]$SignatureAlgorithm).Value)
+
+              [string[]] $AlternativeName  += $hostnonFQDN
+              $AlternativeName += $hostFQDN
+              $IAlternativeNames = New-Object -ComObject X509Enrollment.CAlternativeNames
+
+              foreach ($AN in $AlternativeName)
+              {
+                  $AltName = New-Object -ComObject X509Enrollment.CAlternativeName
+                  $AltName.InitializeFromString(0x3,$AN)
+                  $IAlternativeNames.Add($AltName)
+              }
+
+              $SubjectAlternativeName = New-Object -ComObject X509Enrollment.CX509ExtensionAlternativeNames
+              $SubjectAlternativeName.InitializeEncode($IAlternativeNames)
+
+              [String[]]$KeyUsage = ("DigitalSignature", "KeyEncipherment")
+              $KeyUsageObj = New-Object -ComObject X509Enrollment.CX509ExtensionKeyUsage
+              $KeyUsageObj.InitializeEncode([int][Security.Cryptography.X509Certificates.X509KeyUsageFlags]($KeyUsage))
+              $KeyUsageObj.Critical = $true
+
+              $cert.X509Extensions.Add($KeyUsageObj)
+              $cert.X509Extensions.Add($ekuext)
+              $cert.SignatureInformation.HashAlgorithm = $SigOID
+              $CERT.X509Extensions.Add($SubjectAlternativeName)
+              $cert.Encode()
+
+              $enrollment = New-Object -COM "X509Enrollment.CX509Enrollment.1"
+              $enrollment.InitializeFromRequest($cert)
+              $certdata = $enrollment.CreateRequest(0)
+              $enrollment.InstallResponse(2, $certdata, 0, "")
+
+              # extract/return the thumbprint from the generated cert
+              $parsed_cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+              $parsed_cert.Import([System.Text.Encoding]::UTF8.GetBytes($certdata))
+
+              return $parsed_cert.Thumbprint
+          }
+                    
+          $Hostname = [System.Net.Dns]::GetHostByName((hostname)).HostName.ToUpper()
+          $thumbprint = New-LegacySelfSignedCert -SubjectName $Hostname
+          $listener = Get-ChildItem -Path WSMan:\localhost\Listener | Where-Object { $_.Keys -contains "Transport=HTTPS" } | select-object *
+
+          $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | where-object { $_.Thumbprint -eq $thumbprint } | select-object Thumbprint
+          write-output ("Certificate: {0}" -f $thumbprint.Thumbprint)
+          
+          # update existing listener
+          if($listener -ne $null){
+              $name = $listener.PSChildName
+              set-item WSMan:\localhost\Listener\$name\Hostname -Value "" -Force 2> $null
+              set-item WSMan:\localhost\Listener\$name\CertificateThumbprint -Value $thumbprint.Thumbprint -force 2> $null
+          }else{
+              New-Item -Path WSMan:\LocalHost\Listener -Address * -Transport HTTPS -Hostname $Hostname -CertificateThumbPrint $thumbprint.Thumbprint -Port "5986" -force
+          }
+          
+          # remove any other certs
+          Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Thumbprint -notmatch $thumbprint.Thumbprint } | Remove-Item
+
+        when: ansible_system == 'Win32NT'
 
       - name: Reboot to apply changes
         become: true

@@ -1,0 +1,16 @@
+- hosts: all
+  ignore_unreachable: yes
+  tasks:
+    - name: Disable sleep
+      win_shell: |
+        powercfg.exe -x -monitor-timeout-ac 0
+        powercfg.exe -x -monitor-timeout-dc 0
+        powercfg.exe -x -disk-timeout-ac 0
+        powercfg.exe -x -disk-timeout-dc 0
+        powercfg.exe -x -standby-timeout-ac 0
+        powercfg.exe -x -standby-timeout-dc 0
+        powercfg.exe -x -hibernate-timeout-ac 0
+        powercfg.exe -x -hibernate-timeout-dc 0
+        
+    - name: Start windows update
+      include_tasks: windows_update.yml
