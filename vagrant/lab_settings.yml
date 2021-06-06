@@ -7,8 +7,8 @@ centos_user: "vagrant"
 centos_password: "vagrant"
 pfsense_user: "vagrant"
 pfsense_password: "vagrant"
-win_admin_user: "administrator"
-win_admin_password: "myTempPassword123"
+win_admin_user: "vagrant"
+win_admin_password: "vagrant"
 
 # settings for domain (used to configure pfsense)
 lab_base_tld: "lan"

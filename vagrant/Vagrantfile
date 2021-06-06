@@ -56,9 +56,9 @@ $win16_hosts_override =                  [
 
 $win19_hosts_override =                  [
                                             # win19 server
-                                            #{"name"=>"win19-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
-                                            #{"name"=>"win19-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
-                                            #{"name"=>"win19-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
+                                            {"name"=>"win19-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
+                                            {"name"=>"win19-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
+                                            {"name"=>"win19-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
                                         ]
 
 $win10_hosts_override =                  [
@@ -73,7 +73,7 @@ $win7_hosts_override =                   [
 
 $centos_hosts_override =                 [
                                             # ansible
-                                            #{"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
+                                            {"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
                                             # prowler
 					                        #{"name"=>"prowler-srv1","prod_ip"=>"172.21.0.31","role"=>"prowler"},
                                         ]
