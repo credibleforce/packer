@@ -309,7 +309,29 @@
             Set-PackageSource -Name PSGallery -Trusted -Force 
           }
         when: ansible_system == 'Win32NT'
-    
+
+      # migrate to prod user so we can clean up build account
+      - name: "Switch from build user to prod Admin"
+        set_fact:
+          ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
+          ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password  }}"
+          ansible_winrm_transport: ntlm
+        no_log: true
+        when: ansible_system == 'Win32NT'
+
+      # provision student account and remove and non default accounts
+      - name: "Windows Base Account Setup"
+        win_shell: |
+          # remove all non-default accounts
+          $AccountsToKeep = @('Administrator','DefaultAccount','Guest','WDAGUtilityAccount')
+          Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | % { Remove-LocalUser -Name $_.Name }
+          Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | Remove-CimInstance -ErrorAction SilentlyContinue
+          
+          # create student account
+          New-LocalUser "{{ lab.settings.windows.win_student_user }}" -Password ("{{ lab.settings.windows.win_student_password }}" | ConvertTo-SecureString -AsPlainText -Force) -FullName "Student User" -Description "Student User" -AccountNeverExpires -PasswordNeverExpires
+          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "{{ lab.settings.windows.win_student_user }}"
+        when: ansible_system == 'Win32NT'
+
       - name: "Change the hostname on Windows"
         win_hostname:
           name: "{{inventory_hostname}}"

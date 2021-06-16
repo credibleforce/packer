@@ -16,6 +16,15 @@
         become: false
         register: whoami
       
+      # migrate to prod user so we can clean up build account
+      - name: "Switch from build user to prod Admin"
+        set_fact:
+          ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
+          ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password  }}"
+          ansible_winrm_transport: ntlm
+        no_log: true
+        when: ansible_system == 'Win32NT'
+
       # at build as dns is unavailable we need to ensure we use prod_ip
       - name: Remove any existing host keys by name and assigned ip
         delegate_to: localhost
