@@ -152,6 +152,13 @@
           dest: "~/deployment/ansible/inventory.yml"
           mode: 0600
 
+      # copy settings file
+      - name: Add setting file
+        copy:
+          src: ../vars/lab.yml
+          dest: ~/deployment/ansible/lab_settings.yml
+          mode: 0600
+
   # update pfsense with dhcp static reservation and dns entries for hosts
   - hosts: pfsense
     vars:

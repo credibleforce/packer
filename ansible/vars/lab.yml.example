@@ -24,6 +24,9 @@ lab:
         ansible:
             ansible_ssh_user: vagrant
             admin_password: 1-ansible-password
+            pg_password: 1-pg-password
+            secret_key: 1-secret-password
         splunk:
             ansible_ssh_user: vagrant
             admin_password: 1-splunk-password
+            splunkbase_token: xxxxx
