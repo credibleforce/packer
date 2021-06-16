@@ -22,7 +22,6 @@
           ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
           ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password  }}"
           ansible_winrm_transport: ntlm
-        no_log: true
         when: ansible_system == 'Win32NT'
 
       # at build as dns is unavailable we need to ensure we use prod_ip
