@@ -7,8 +7,13 @@ centos_user: "vagrant"
 centos_password: "vagrant"
 pfsense_user: "vagrant"
 pfsense_password: "vagrant"
-win_admin_user: "vagrant"
-win_admin_password: "vagrant"
+win_build_admin_user: "vagrant"
+win_build_admin_password: "vagrant"
+win_admin_user: "administrator"
+win_admin_password: "1Admin@dversary"
+win_student_user: "student"
+win_student_password: "student"
+
 
 # settings for domain (used to configure pfsense)
 lab_base_tld: "lan"
@@ -18,8 +23,8 @@ win_netbios_domain: "{{ lab_base_name | upper }}"
 win_ca_common_name: "{{ lab_base_name | upper }}-PKI"
 
 # settings for ansible and splunk (not currently used)
-splunk_password: "1-splunk-password"
-ansible_awx_password: "1-ansible-password"
-ansible_awx_pg_password: "1-awx-pg-password"
-ansible_awx_secret_key: "1-awx-secret-key"
-
+splunk_password: "1Splunk@dversary"
+splunkbase_token: "xxxx"
+ansible_awx_password: "1Ansible@dversary"
+ansible_awx_pg_password: "1PG@dversary"
+ansible_awx_secret_key: "1Secret@dversary"
