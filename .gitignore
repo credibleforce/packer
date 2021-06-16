@@ -22,8 +22,6 @@ output-*/
 ansible/inventory/*.yml
 vagrant/vmlist.txt
 inventory
-vagrant/lab_settings.yml
 ansible/vars/lab.yml
-vagrant/lab_settings.yml
 vagrant/deployment.tgz
 vagrant/lab_settings.yml
