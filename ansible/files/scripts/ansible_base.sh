@@ -36,7 +36,7 @@ sudo python3 -m pip install \
 
 # Stage awx certs
 cd ~/deployment/ansible
-ansible-playbook -vv -i ~/deployment/ansible/inventory.yml --vault-password-file ~/deployment/ansible/.vault_passwd.txt  ~/deployment/ansible/playbooks/awx-self-signed-ssl.yml --extra-vars "@~/deployment/ansible/lab_settings.yml"
+ansible-playbook -vv -i ~/deployment/ansible/inventory.yml ~/deployment/ansible/playbooks/awx-self-signed-ssl.yml --extra-vars "@~/deployment/ansible/lab_settings.yml"
 
 # Install awx
 # remove existing docker configuration
