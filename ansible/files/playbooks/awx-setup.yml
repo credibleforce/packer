@@ -56,6 +56,6 @@
     #     cat ~/deployment/ansible/.vault_passwd.txt
     #   register: result
 
-    - name: Add vault credentials to awx
-      command: |
-        awx --conf.host "https://localhost:443" --conf.token "{{ awx_token }}" --conf.insecure credential create --name="lab-vault" --organization="lab" --credential_type="Vault" --inputs="{\"vault_password\":\"{{ result.stdout }}\"}"
+    # - name: Add vault credentials to awx
+    #   command: |
+    #     awx --conf.host "https://localhost:443" --conf.token "{{ awx_token }}" --conf.insecure credential create --name="lab-vault" --organization="lab" --credential_type="Vault" --inputs="{\"vault_password\":\"{{ result.stdout }}\"}"
