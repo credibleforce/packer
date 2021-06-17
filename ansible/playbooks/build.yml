@@ -146,6 +146,12 @@
           state: directory
           mode: 0700
 
+      - name: Create lab playbooks directory
+        file:
+          path: "~/deployment/ansible/playbooks"
+          state: directory
+          mode: 0700
+
       - name: Add lab inventory file
         copy:
           src: ../inventory/lab.yml
@@ -158,6 +164,26 @@
           src: ../vars/lab.yml
           dest: ~/deployment/ansible/lab_settings.yml
           mode: 0600
+      
+      # create ansible awx vars
+      - name: Create lab settings file
+        template:
+          src: ../templates/vars.yml.j2
+          dest: "~/deployment/ansible/vars.yml"
+
+      # Copy ansible plabooks
+      - name: Copy playbookds
+        copy:
+          src: ../files/playbooks/
+          dest: "~/deployment/ansible/playbooks/"
+          mode: 0600
+
+    # Copy ansible plabooks
+      - name: Copy playbookds
+        copy:
+          src: ../files/scripts/
+          dest: "~/"
+          mode: 0700
 
   # update pfsense with dhcp static reservation and dns entries for hosts
   - hosts: pfsense
