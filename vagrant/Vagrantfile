@@ -49,9 +49,9 @@ $win12_hosts_override =                  [
 
 $win16_hosts_override =                  [
                                             # win16 server
-                                            #{"name"=>"win16-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
-                                            #{"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
-                                            #{"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
+                                            {"name"=>"win16-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
+                                            {"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
+                                            {"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
                                         ]
 
 $win19_hosts_override =                  [
@@ -63,7 +63,7 @@ $win19_hosts_override =                  [
 
 $win10_hosts_override =                  [
                                             # win10 desktop
-                                            #{"name"=>"win10-dsk1","prod_ip"=>"172.21.0.20","role"=>"member_server" },
+                                            {"name"=>"win10-dsk1","prod_ip"=>"172.21.0.20","role"=>"member_server" },
                                         ]
 
 $win7_hosts_override =                   [
@@ -1026,122 +1026,122 @@ Vagrant.configure("2") do |config|
             puts(result)
             puts("Post build configuration complete.")
 
-            # # update network interfaces for all hosts, moving to pfsense
-            # puts("Pushing machines to prod network...")
-            # $kali_config.each do |b| 
-            #     puts("Updating network...")
-            #     r=`vmrun stop "#{b}"`
-            #     r=`sleep 10`
-            #     r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
-            #     r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
-            #     r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
-            #     r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-            #     r=`vmrun start "#{b}"`
-            #     puts("Update network complete.")
-            # end
+            # update network interfaces for all hosts, moving to pfsense
+            puts("Pushing machines to prod network...")
+            $kali_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
 
-            # $centos_config.each do |b| 
-            #     puts("Updating network...")
-            #     r=`vmrun stop "#{b}"`
-            #     r=`sleep 10`
-            #     r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
-            #     r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
-            #     r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
-            #     r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-            #     r=`vmrun start "#{b}"`
-            #     puts("Update network complete.")
-            # end
+            $centos_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
 
-            # $splunk_config.each do |b| 
-            #     puts("Updating network...")
-            #     r=`vmrun stop "#{b}"`
-            #     r=`sleep 10`
-            #     r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
-            #     r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
-            #     r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
-            #     r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-            #     r=`vmrun start "#{b}"`
-            #     puts("Update network complete.")
-            # end
+            $splunk_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
             
-            # $win08_config.each do |b| 
-            #     puts("Updating network...")
-            #     r=`vmrun stop "#{b}"`
-            #     r=`sleep 10`
-            #     r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
-            #     r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
-            #     r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
-            #     r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-            #     r=`vmrun start "#{b}"`
-            #     puts("Update network complete.")
-            # end
+            $win08_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
 
-            # $win12_config.each do |b| 
-            #     puts("Updating network...")
-            #     r=`vmrun stop "#{b}"`
-            #     r=`sleep 10`
-            #     r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
-            #     r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
-            #     r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
-            #     r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-            #     r=`vmrun start "#{b}"`
-            #     puts("Update network complete.")
-            # end
+            $win12_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
 
-            # $win16_config.each do |b| 
-            #     puts("Updating network...")
-            #     r=`vmrun stop "#{b}"`
-            #     r=`sleep 10`
-            #     r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
-            #     r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
-            #     r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
-            #     r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-            #     r=`vmrun start "#{b}"`
-            #     puts("Update network complete.")
-            # end
+            $win16_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
 
-            # $win19_config.each do |b| 
-            #     puts("Updating network...")
-            #     r=`vmrun stop "#{b}"`
-            #     r=`sleep 10`
-            #     r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
-            #     r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
-            #     r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
-            #     r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-            #     r=`vmrun start "#{b}"`
-            #     puts("Update network complete.")
-            # end
+            $win19_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
 
-            # $win10_config.each do |b| 
-            #     puts("Updating network...")
-            #     r=`vmrun stop "#{b}"`
-            #     r=`sleep 10`
-            #     r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
-            #     r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
-            #     r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
-            #     r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-            #     r=`vmrun start "#{b}"`
-            #     puts("Update network complete.")
-            # end
+            $win10_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
 
-            # $win7_config.each do |b| 
-            #     puts("Updating network...")
-            #     r=`vmrun stop "#{b}"`
-            #     r=`sleep 10`
-            #     r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
-            #     r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
-            #     r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
-            #     r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
-            #     r=`vmrun start "#{b}"`
-            #     puts("Update network complete.")
-            # end
-            # puts("Prod network migration complete.")
+            $win7_config.each do |b| 
+                puts("Updating network...")
+                r=`vmrun stop "#{b}"`
+                r=`sleep 10`
+                r=`sed -i -e '/ethernet0\.connectiontype/d' "#{b}"`
+                r=`sed -i -e '/ethernet0\.vnet/d' "#{b}"`
+                r=`echo ethernet0.vnet = \"vmnet3\" >> "#{b}"`
+                r=`echo ethernet0.connectiontype = \"custom\" >> "#{b}"`
+                r=`vmrun start "#{b}"`
+                puts("Update network complete.")
+            end
+            puts("Prod network migration complete.")
 
-            #  # updated known hosts with prod ip key
-            #  puts("Running post prod migration configuration...")
-            #  result=`cd #{$ANSIBLE_DIR} && ansible-playbook #{$PLAYBOOK_POST_PROD_FILE} -i #{$INVENTORY_FILE} -v`
-            #  puts(result)
-            #  puts("Post prod migration configuration complete.")
+             # updated known hosts with prod ip key
+             puts("Running post prod migration configuration...")
+             result=`cd #{$ANSIBLE_DIR} && ansible-playbook #{$PLAYBOOK_POST_PROD_FILE} -i #{$INVENTORY_FILE} -v`
+             puts(result)
+             puts("Post prod migration configuration complete.")
         else
             puts("Waiting for builds to complete...")
         end
