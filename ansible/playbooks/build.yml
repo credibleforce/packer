@@ -33,9 +33,9 @@
       - name: Remove any existing host keys by name and assigned ip
         delegate_to: localhost
         shell: |
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{inventory_hostname}}"
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{ansible_host}}"
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{hostvars[inventory_hostname].prod_ip}}"
+          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{inventory_hostname}}"
+          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ansible_host}}"
+          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{hostvars[inventory_hostname].prod_ip}}"
         ignore_errors: true
         when:
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
