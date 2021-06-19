@@ -41,3 +41,13 @@
           line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + inventory_hostname, errors='warn') }}"
         when:
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
+      
+      - name: Ensure ssh host key by ansible_host
+        delegate_to: localhost
+        lineinfile:
+          dest: ~/.ssh/known_hosts
+          create: yes
+          state: present
+          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + ansible_host, errors='warn') }}"
+        when:
+          - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')

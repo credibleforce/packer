@@ -353,8 +353,11 @@
           Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | Remove-CimInstance -ErrorAction SilentlyContinue
           
           # create student account
-          New-LocalUser "{{ lab.settings.windows.win_student_user }}" -Password ("{{ lab.settings.windows.win_student_password }}" | ConvertTo-SecureString -AsPlainText -Force) -FullName "Student User" -Description "Student User" -AccountNeverExpires -PasswordNeverExpires
+          New-LocalUser "{{ lab.settings.windows.win_student_user }}" -Password ('{{ lab.settings.windows.win_student_password }}' | ConvertTo-SecureString -AsPlainText -Force) -FullName "Student User" -Description "Student User" -AccountNeverExpires -PasswordNeverExpires
           Add-LocalGroupMember -Group "Remote Desktop Users" -Member "{{ lab.settings.windows.win_student_user }}"
+
+          # rename computer
+          Rename-Computer -NewName "{{ inventory_hostname }}"
         when: ansible_system == 'Win32NT'
 
       - name: "Change the hostname on Windows"

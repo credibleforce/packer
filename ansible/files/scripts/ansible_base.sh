@@ -81,8 +81,8 @@ localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env pyth
 
 [all:vars]
 dockerhub_base=ansible
-awx_task_hostname=awx_task
-awx_web_hostname=awx_web
+awx_task_hostname=awx
+awx_web_hostname=awxweb
 postgres_data_dir="/opt/awx/pgdocker"
 host_port=80
 host_port_ssl=443
