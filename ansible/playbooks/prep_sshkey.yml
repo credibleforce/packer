@@ -6,8 +6,6 @@
       ansible_connection: local
       ansible_python_interpreter: "{{ ansible_playbook_python }}"
     pre_tasks:
-      - name: Lab variables
-        include_vars: ../vars/lab.yml
     tasks:
       - name: Run whoami without become.
         delegate_to: localhost
@@ -16,13 +14,12 @@
         become: false
         register: whoami
       
-      # at build as dns is unavailable we need to ensure we use prod_ip
+      # at build as dns is unavailable we need to ensure we use ansible_host
       - name: Remove any existing host keys by name and assigned ip
         delegate_to: localhost
         shell: |
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{inventory_hostname}}"
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{ansible_host}}"
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{hostvars[inventory_hostname].prod_ip}}"
+          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{inventory_hostname}}"
+          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ansible_host}}"
         ignore_errors: yes
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
@@ -34,13 +31,23 @@
         when: 
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
       
-      # at build as dns is unavailable we need to ensure we use prod_ip
+      # at build as dns is unavailable we need to ensure we use inventory_hostname
       - name: Ensure ssh host key by ansible_host
         delegate_to: localhost
         lineinfile:
           dest: ~/.ssh/known_hosts
           create: yes
           state: present
-          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + hostvars[inventory_hostname].prod_ip, errors='warn') }}"
-        when: 
+          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + inventory_hostname, errors='warn') }}"
+        when:
+          - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
+      
+      - name: Ensure ssh host key by ansible_host
+        delegate_to: localhost
+        lineinfile:
+          dest: ~/.ssh/known_hosts
+          create: yes
+          state: present
+          line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + ansible_host, errors='warn') }}"
+        when:
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')

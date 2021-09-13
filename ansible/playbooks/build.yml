@@ -33,9 +33,9 @@
       - name: Remove any existing host keys by name and assigned ip
         delegate_to: localhost
         shell: |
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{inventory_hostname}}"
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{ansible_host}}"
-          ssh-keygen -f "~/.ssh/known_hosts" -R "{{hostvars[inventory_hostname].prod_ip}}"
+          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{inventory_hostname}}"
+          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ansible_host}}"
+          ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{hostvars[inventory_hostname].prod_ip}}"
         ignore_errors: true
         when:
           - hostvars[inventory_hostname].ansible_connection is not defined or (hostvars[inventory_hostname].ansible_connection is defined and hostvars[inventory_hostname].ansible_connection=='ssh')
@@ -146,11 +146,44 @@
           state: directory
           mode: 0700
 
+      - name: Create lab playbooks directory
+        file:
+          path: "~/deployment/ansible/playbooks"
+          state: directory
+          mode: 0700
+
       - name: Add lab inventory file
         copy:
           src: ../inventory/lab.yml
           dest: "~/deployment/ansible/inventory.yml"
           mode: 0600
+
+      # copy settings file
+      - name: Add setting file
+        copy:
+          src: ../vars/lab.yml
+          dest: ~/deployment/ansible/lab_settings.yml
+          mode: 0600
+      
+      # create ansible awx vars
+      - name: Create lab settings file
+        template:
+          src: ../templates/vars.yml.j2
+          dest: "~/deployment/ansible/vars.yml"
+
+      # Copy ansible plabooks
+      - name: Copy playbookds
+        copy:
+          src: ../files/playbooks/
+          dest: "~/deployment/ansible/playbooks/"
+          mode: 0600
+
+    # Copy ansible plabooks
+      - name: Copy playbookds
+        copy:
+          src: ../files/scripts/
+          dest: "~/"
+          mode: 0700
 
   # update pfsense with dhcp static reservation and dns entries for hosts
   - hosts: pfsense
@@ -302,7 +335,31 @@
             Set-PackageSource -Name PSGallery -Trusted -Force 
           }
         when: ansible_system == 'Win32NT'
-    
+
+      # migrate to prod user so we can clean up build account
+      - name: "Switch from build user to prod Admin"
+        set_fact:
+          ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
+          ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password  }}"
+          ansible_winrm_transport: ntlm
+        when: ansible_system == 'Win32NT'
+
+      # provision student account and remove and non default accounts
+      - name: "Windows Base Account Setup"
+        win_shell: |
+          # remove all non-default accounts
+          $AccountsToKeep = @('Administrator','DefaultAccount','Guest','WDAGUtilityAccount')
+          Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | % { Remove-LocalUser -Name $_.Name }
+          Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAccount='True'"  | Where-Object { $_.Name -notin $AccountsToKeep } | Remove-CimInstance -ErrorAction SilentlyContinue
+          
+          # create student account
+          New-LocalUser "{{ lab.settings.windows.win_student_user }}" -Password ('{{ lab.settings.windows.win_student_password }}' | ConvertTo-SecureString -AsPlainText -Force) -FullName "Student User" -Description "Student User" -AccountNeverExpires -PasswordNeverExpires
+          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "{{ lab.settings.windows.win_student_user }}"
+
+          # rename computer
+          Rename-Computer -NewName "{{ inventory_hostname }}"
+        when: ansible_system == 'Win32NT'
+
       - name: "Change the hostname on Windows"
         win_hostname:
           name: "{{inventory_hostname}}"
