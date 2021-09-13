@@ -27,3 +27,6 @@ splunk_password: "changeme"
 ansible_awx_password: "changeme"
 ansible_awx_pg_password: "changeme"
 ansible_awx_secret_key: "changeme"
+
+# splunk
+splunkbase_token: ""
