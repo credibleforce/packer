@@ -50,8 +50,8 @@ $win12_hosts_override =                  [
 $win16_hosts_override =                  [
                                             # win16 server
                                             {"name"=>"win16-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
-                                            {"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
-                                            {"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
+                                            #{"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
+                                            #{"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
                                         ]
 
 $win19_hosts_override =                  [
@@ -63,7 +63,7 @@ $win19_hosts_override =                  [
 
 $win10_hosts_override =                  [
                                             # win10 desktop
-                                            {"name"=>"win10-dsk1","prod_ip"=>"172.21.0.20","role"=>"member_server" },
+                                            #{"name"=>"win10-dsk1","prod_ip"=>"172.21.0.20","role"=>"member_server" },
                                         ]
 
 $win7_hosts_override =                   [
@@ -73,13 +73,13 @@ $win7_hosts_override =                   [
 
 $centos_hosts_override =                 [
                                             # ansible
-                                            {"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
+                                            #{"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
                                             # prowler
 					                        #{"name"=>"prowler-srv1","prod_ip"=>"172.21.0.31","role"=>"prowler"},
                                         ]
 $splunk_hosts_override =                [
                                             # splunk
-                                            # {"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
+                                            {"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh1","prod_ip"=>"172.21.0.41","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh2","prod_ip"=>"172.21.0.42","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh3","prod_ip"=>"172.21.0.43","role"=>"splunk_search_head,splunk_search_head_captain","custom_security_group"=>"splunk_security_group"},

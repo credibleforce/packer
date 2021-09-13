@@ -8,6 +8,8 @@ centos_user: "vagrant"
 centos_password: "vagrant"
 pfsense_user: "vagrant"
 pfsense_password: "vagrant"
+win_build_admin_user: "vagrant"
+win_build_admin_password: "vagrant"
 win_admin_user: "administrator"
 win_admin_password: "changeme"
 
