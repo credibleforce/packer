@@ -10,7 +10,7 @@
       - name: Create lab settings file
         template:
           src: ../templates/lab.yml.j2
-          dest: "{{ playbook_dir }}/../vars/lab.yml"
+          dest: "../vars/lab.yml"
 
   # update the list of known_hosts so ssh will not fail to connect
   - hosts: all
@@ -292,11 +292,9 @@
       ssh_key_filename: id_lab
       ansible_timeout: 600
     gather_facts: True
-    environment:
     pre_tasks:
       - name: Lab variables
         include_vars: ../vars/lab.yml
-    post_tasks:
     tasks:
       - name: Distribution
         debug: 
