@@ -24,9 +24,10 @@ win_ca_common_name: "{{ lab_base_name | upper }}-PKI"
 
 # settings for ansible and splunk (not currently used)
 splunk_password: "changeme"
-ansible_awx_password: "changeme"
-ansible_awx_pg_password: "changeme"
-ansible_awx_secret_key: "changeme"
-
-# splunk
 splunkbase_token: ""
+
+# ansible
+ansible_awx_password: "changeme"
+ansible_awx_pg_password: "changemed"
+ansible_awx_secret_key: "changeme"
+ansible_vault_password: "changeme" 

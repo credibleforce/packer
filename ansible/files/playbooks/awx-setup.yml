@@ -32,11 +32,11 @@
 
     - name: Copy inventory to awx docker
       command: |
-        sudo docker cp "$HOME/deployment/ansible/inventory.yml" "awx_web:lab.yml"
+        sudo docker cp "$HOME/deployment/ansible/inventory.yml" "awx_web:lab_settings.yml"
 
     - name: Import inventory to awx
       command: |
-        docker exec -i awx_web /bin/bash -c "awx-manage inventory_import --source=lab.yml --inventory-name=lab-inventory --overwrite --overwrite-vars"
+        docker exec -i awx_web /bin/bash -c "awx-manage inventory_import --source=lab_settings.yml --inventory-name=lab-inventory --overwrite --overwrite-vars"
       become: true
 
     - name: Add ssh key credentials to awx

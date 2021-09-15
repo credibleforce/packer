@@ -3,7 +3,7 @@
   gather_facts: true
   pre_tasks:
     - name: Windows Variable
-      include_vars: vars/lab.yml
+      include_vars: vars/lab_settings.yml
       when: ansible_system == 'Win32NT'
   tasks:
     - name: Update to .net48

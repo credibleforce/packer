@@ -14,7 +14,7 @@ class Hash
     end
 end
 
-$settings = YAML.load_file("lab_settings.yml")
+$settings = YAML.load_file("settings.yml")
 
 $private_key_path = File.join(Dir.home, ".ssh", "id_rsa")
 $public_key_path = File.join(Dir.home, ".ssh", "id_rsa.pub")
@@ -73,13 +73,13 @@ $win7_hosts_override =                   [
 
 $centos_hosts_override =                 [
                                             # ansible
-                                            #{"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
+                                            {"name"=>"ansible-srv1","prod_ip"=>"172.21.0.30","role"=>"ansible","custom_security_group"=>"ansible_security_group"},
                                             # prowler
 					                        #{"name"=>"prowler-srv1","prod_ip"=>"172.21.0.31","role"=>"prowler"},
                                         ]
 $splunk_hosts_override =                [
                                             # splunk
-                                            #{"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
+                                            {"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh1","prod_ip"=>"172.21.0.41","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh2","prod_ip"=>"172.21.0.42","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh3","prod_ip"=>"172.21.0.43","role"=>"splunk_search_head,splunk_search_head_captain","custom_security_group"=>"splunk_security_group"},

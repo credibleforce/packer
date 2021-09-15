@@ -4,13 +4,13 @@
   - hosts: local
     pre_tasks:
       - name: Lab settings variables
-        include_vars: ../../vagrant/lab_settings.yml
+        include_vars: ../../vagrant/settings.yml
     gather_facts: false
     tasks:
       - name: Create lab settings file
         template:
-          src: ../templates/lab.yml.j2
-          dest: "../vars/lab.yml"
+          src: ../templates/lab_settings.yml.j2
+          dest: "../vars/lab_settings.yml"
 
   # update the list of known_hosts so ssh will not fail to connect
   - hosts: all
@@ -20,7 +20,7 @@
       ansible_python_interpreter: "{{ ansible_playbook_python }}"
     pre_tasks:
       - name: Lab variables
-        include_vars: ../vars/lab.yml
+        include_vars: ../vars/lab_settings.yml
     tasks:
       - name: Run whoami without become.
         delegate_to: localhost
@@ -65,7 +65,7 @@
     gather_facts: True
     pre_tasks:
       - name: Lab variables
-        include_vars: ../vars/lab.yml
+        include_vars: ../vars/lab_settings.yml
     tasks:
       - name: Purge existing lab key if present
         delegate_to: localhost
@@ -161,7 +161,7 @@
       # copy settings file
       - name: Add setting file
         copy:
-          src: ../vars/lab.yml
+          src: ../vars/lab_settings.yml
           dest: ~/deployment/ansible/lab_settings.yml
           mode: 0600
       
@@ -192,7 +192,7 @@
     gather_facts: False
     pre_tasks:
       - name: Lab variables
-        include_vars: ../vars/lab.yml
+        include_vars: ../vars/lab_settings.yml
     tasks:
       - name: Remove domain setting
         become: true
@@ -294,7 +294,7 @@
     gather_facts: True
     pre_tasks:
       - name: Lab variables
-        include_vars: ../vars/lab.yml
+        include_vars: ../vars/lab_settings.yml
         
     tasks:
       - name: Distribution
