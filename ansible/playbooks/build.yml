@@ -295,6 +295,7 @@
     pre_tasks:
       - name: Lab variables
         include_vars: ../vars/lab.yml
+        
     tasks:
       - name: Distribution
         debug: 

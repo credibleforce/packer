@@ -1050,11 +1050,10 @@ Vagrant.configure("2") do |config|
             # prod inventory file
             $ansible_inventory_prod['all']['children']['lab']['children'] = $roles_prod
             File.write($LAB_INVENTORY_FILE, $ansible_inventory_prod.to_yaml, mode: "a")
-            
 
             # set hostname and ssh key based auth
             puts("Running post build configuration...")
-            result=`cd #{$ANSIBLE_DIR} && ansible-playbook #{$PLAYBOOK_FILE} -i #{$INVENTORY_FILE} -v`
+            result=`env -i HOME="$HOME" bash -l -c 'cd #{$ANSIBLE_DIR} && ansible-playbook -e ansible_winrm_server_cert_validation=ignore -i #{$INVENTORY_FILE} -v #{$PLAYBOOK_FILE}'`
             puts(result)
             puts("Post build configuration complete.")
 
@@ -1169,11 +1168,11 @@ Vagrant.configure("2") do |config|
             end
             puts("Prod network migration complete.")
 
-             # updated known hosts with prod ip key
-             puts("Running post prod migration configuration...")
-             result=`cd #{$ANSIBLE_DIR} && ansible-playbook #{$PLAYBOOK_POST_PROD_FILE} -i #{$INVENTORY_FILE} -v`
-             puts(result)
-             puts("Post prod migration configuration complete.")
+            # updated known hosts with prod ip key
+            puts("Running post prod migration configuration...")
+            result=`env -i HOME="$HOME" bash -l -c 'cd #{$ANSIBLE_DIR} && ansible-playbook -e ansible_winrm_server_cert_validation=ignore -i #{$INVENTORY_FILE} -v #{$PLAYBOOK_POST_PROD_FILE}'`
+            puts(result)
+            puts("Post prod migration configuration complete.")
         else
             puts("Waiting for builds to complete...")
         end
