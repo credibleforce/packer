@@ -10,7 +10,7 @@
       - name: Create lab settings file
         template:
           src: ../templates/lab.yml.j2
-          dest: "{{ playbook_dir }}/../vars/lab.yml"
+          dest: "../vars/lab.yml"
 
   # update the list of known_hosts so ssh will not fail to connect
   - hosts: all
@@ -292,19 +292,10 @@
       ssh_key_filename: id_lab
       ansible_timeout: 600
     gather_facts: True
-    environment:
     pre_tasks:
       - name: Lab variables
         include_vars: ../vars/lab.yml
-
-      # - name: Windows Variable
-      #   include_vars: ../vars/windows.yml
-      #   when: ansible_system == 'Win32NT'
-      
-      # - name: Linux Variable
-      #   include_vars: ../vars/linux.yml
-      #   when: ansible_system == 'Linux'
-    post_tasks:
+        
     tasks:
       - name: Distribution
         debug: 
@@ -360,12 +351,6 @@
           Rename-Computer -NewName "{{ inventory_hostname }}"
         when: ansible_system == 'Win32NT'
 
-      - name: "Change the hostname on Windows"
-        win_hostname:
-          name: "{{inventory_hostname}}"
-        register: res
-        when: ansible_system == 'Win32NT'
-
       # important to add this first or sudo fails hostname lookup
       - name: Add hostname to /etc/hosts on Linux
         become: true
@@ -400,9 +385,7 @@
         win_reboot:
           reboot_timeout: 300
           post_reboot_delay: 90
-        when: 
-          - ansible_system == 'Win32NT'
-          - res.reboot_required
+        when: ansible_system == 'Win32NT'
 
       - name: "Update WinRM SSL Certificate with Hostname"
         win_shell: |

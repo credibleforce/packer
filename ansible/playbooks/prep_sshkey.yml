@@ -6,6 +6,8 @@
       ansible_connection: local
       ansible_python_interpreter: "{{ ansible_playbook_python }}"
     pre_tasks:
+      - name: Lab variables
+        include_vars: ../vars/lab.yml
     tasks:
       - name: Run whoami without become.
         delegate_to: localhost

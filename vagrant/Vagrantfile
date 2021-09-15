@@ -49,14 +49,14 @@ $win12_hosts_override =                  [
 
 $win16_hosts_override =                  [
                                             # win16 server
-                                            {"name"=>"win16-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
+                                            #{"name"=>"win16-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
                                             #{"name"=>"win16-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
                                             #{"name"=>"win16-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
                                         ]
 
 $win19_hosts_override =                  [
                                             # win19 server
-                                            #{"name"=>"win19-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
+                                            {"name"=>"win19-dc1","prod_ip"=>"172.21.0.5","role"=>"domain_controller,certificate_authority,splunk_universal_forwarder" },
                                             #{"name"=>"win19-wef1","prod_ip"=>"172.21.0.10","role"=>"wef_server,splunk_universal_forwarder" },
                                             #{"name"=>"win19-srv1","prod_ip"=>"172.21.0.11","role"=>"member_server" },
                                         ]
@@ -79,7 +79,7 @@ $centos_hosts_override =                 [
                                         ]
 $splunk_hosts_override =                [
                                             # splunk
-                                            {"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
+                                            #{"name"=>"splk-sh1","prod_ip"=>"172.21.0.40","role"=>"splunk_standalone","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh1","prod_ip"=>"172.21.0.41","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh2","prod_ip"=>"172.21.0.42","role"=>"splunk_search_head","custom_security_group"=>"splunk_security_group"},
                                             # {"name"=>"splk-sh3","prod_ip"=>"172.21.0.43","role"=>"splunk_search_head,splunk_search_head_captain","custom_security_group"=>"splunk_security_group"},
@@ -163,7 +163,34 @@ $ansible_inventory = {
     } 
 }
 
-$roles = {}
+$roles = {
+    "windows" => {
+        "children" => {
+
+                }
+    },
+    "linux" => {
+        "children" => {
+            
+        }
+    },
+    "splunk" => {
+        "children" => {
+
+                }
+    },
+    "pentest" => {
+        "children" => {
+
+                }
+    },
+    "firewall" => {
+        "children" => {
+
+                }
+    }
+}
+
 $roles_prod = {
     "windows" => {
         "children" => {
@@ -752,19 +779,20 @@ Vagrant.configure("2") do |config|
         if $win7_counter == $win7_count && $win10_counter == $win10_count && $win19_counter == $win19_count && $win16_counter == $win16_count && $win12_counter == $win12_count && $win08_counter == $win08_count && $centos_counter == $centos_count && $splunk_counter == $splunk_count && $kali_counter == $kali_count && $pfsense_counter == $pfsense_count
             # build inventory - windows
             $roles_prod['windows']['children'] = {}
+            $roles['windows']['children'] = {}
             $win08_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['windows']['children'][r] != nil
+                        $roles['windows']['children'][r]["hosts"][i['name']] = $windows_extra_vars.clone
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['windows']['children'][r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles
@@ -779,16 +807,16 @@ Vagrant.configure("2") do |config|
             $win12_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['windows']['children'][r] != nil
+                        $roles['windows']['children'][r]["hosts"][i['name']] = $windows_extra_vars.clone
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['windows']['children'][r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles
@@ -803,16 +831,16 @@ Vagrant.configure("2") do |config|
             $win16_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['windows']['children'][r] != nil
+                        $roles['windows']['children'][r]["hosts"][i['name']] = $windows_extra_vars.clone
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['windows']['children'][r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles
@@ -827,16 +855,16 @@ Vagrant.configure("2") do |config|
             $win19_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['windows']['children'][r] != nil
+                        $roles['windows']['children'][r]["hosts"][i['name']] = $windows_extra_vars.clone
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['windows']['children'][r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles
@@ -851,16 +879,16 @@ Vagrant.configure("2") do |config|
             $win10_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['windows']['children'][r] != nil
+                        $roles['windows']['children'][r]["hosts"][i['name']] = $windows_extra_vars.clone
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['windows']['children'][r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles
@@ -875,16 +903,16 @@ Vagrant.configure("2") do |config|
             $win7_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $windows_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['windows']['children'][r] != nil
+                        $roles['windows']['children'][r]["hosts"][i['name']] = $windows_extra_vars.clone
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['windows']['children'][r] = {"hosts"=>{ i['name'] => $windows_extra_vars.clone}}
+                        $roles['windows']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['windows']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles
@@ -898,19 +926,20 @@ Vagrant.configure("2") do |config|
             
             # build inventory - linux
             $roles_prod['linux']['children'] = {}
+            $roles['linux']['children'] = {}
             $centos_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $centos_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['linux']['children'][r] != nil
+                        $roles['linux']['children'][r]["hosts"][i['name']] = $centos_extra_vars.clone
+                        $roles['linux']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['linux']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['linux']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $centos_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['linux']['children'][r] = {"hosts"=>{ i['name'] => $centos_extra_vars.clone}}
+                        $roles['linux']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['linux']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['linux']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles
@@ -926,19 +955,20 @@ Vagrant.configure("2") do |config|
 
             # build inventory - kali
             $roles_prod['pentest']['children'] = {}
+            $roles['pentest']['children'] = {}
             $kali_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $kali_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['pentest']['children'][r] != nil
+                        $roles['pentest']['children'][r]["hosts"][i['name']] = $kali_extra_vars.clone
+                        $roles['pentest']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['pentest']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['pentest']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $kali_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['pentest']['children'][r] = {"hosts"=>{ i['name'] => $kali_extra_vars.clone}}
+                        $roles['pentest']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['pentest']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['pentest']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles (kali doesn't use vagrant username, so we keep the ansible_ssh_user)
@@ -954,19 +984,20 @@ Vagrant.configure("2") do |config|
 
             # build inventory - splunk
             $roles_prod['splunk']['children'] = {}
+            $roles['splunk']['children'] = {}
             $splunk_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $centos_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['splunk']['children'][r] != nil
+                        $roles['splunk']['children'][r]["hosts"][i['name']] = $centos_extra_vars.clone
+                        $roles['splunk']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['splunk']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['splunk']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $centos_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['splunk']['children'][r] = {"hosts"=>{ i['name'] => $centos_extra_vars.clone}}
+                        $roles['splunk']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['splunk']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['splunk']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles
@@ -982,19 +1013,20 @@ Vagrant.configure("2") do |config|
 
             # build inventory - pfsense
             $roles_prod['firewall']['children'] = {}
+            $roles['firewall']['children'] = {}
             $pfsense_hosts_override.each do |i|
                 i['role'].split(",").each do |r|
                     # build inventory template roles
-                    if $roles[r] != nil
-                        $roles[r]["hosts"][i['name']] = $pfsense_extra_vars.clone
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                    if $roles['firewall']['children'][r] != nil
+                        $roles['firewall']['children'][r]["hosts"][i['name']] = $pfsense_extra_vars.clone
+                        $roles['firewall']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['firewall']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['firewall']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     else
-                        $roles[r] = {"hosts"=>{ i['name'] => $pfsense_extra_vars.clone}}
-                        $roles[r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
-                        $roles[r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
-                        $roles[r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
+                        $roles['firewall']['children'][r] = {"hosts"=>{ i['name'] => $pfsense_extra_vars.clone}}
+                        $roles['firewall']['children'][r]["hosts"][i['name']]['ansible_host'] = i['ansible_host']
+                        $roles['firewall']['children'][r]["hosts"][i['name']]['prod_ip'] = i['prod_ip']
+                        $roles['firewall']['children'][r]["hosts"][i['name']]['prod_mac'] = i['prod_mac']
                     end
 
                     # prod inventory template roles
@@ -1018,11 +1050,10 @@ Vagrant.configure("2") do |config|
             # prod inventory file
             $ansible_inventory_prod['all']['children']['lab']['children'] = $roles_prod
             File.write($LAB_INVENTORY_FILE, $ansible_inventory_prod.to_yaml, mode: "a")
-            
 
             # set hostname and ssh key based auth
             puts("Running post build configuration...")
-            result=`cd #{$ANSIBLE_DIR} && ansible-playbook #{$PLAYBOOK_FILE} -i #{$INVENTORY_FILE} -v`
+            result=`env -i HOME="$HOME" bash -l -c 'cd #{$ANSIBLE_DIR} && ansible-playbook -e ansible_winrm_server_cert_validation=ignore -i #{$INVENTORY_FILE} -v #{$PLAYBOOK_FILE}'`
             puts(result)
             puts("Post build configuration complete.")
 
@@ -1137,11 +1168,11 @@ Vagrant.configure("2") do |config|
             end
             puts("Prod network migration complete.")
 
-             # updated known hosts with prod ip key
-             puts("Running post prod migration configuration...")
-             result=`cd #{$ANSIBLE_DIR} && ansible-playbook #{$PLAYBOOK_POST_PROD_FILE} -i #{$INVENTORY_FILE} -v`
-             puts(result)
-             puts("Post prod migration configuration complete.")
+            # updated known hosts with prod ip key
+            puts("Running post prod migration configuration...")
+            result=`env -i HOME="$HOME" bash -l -c 'cd #{$ANSIBLE_DIR} && ansible-playbook -e ansible_winrm_server_cert_validation=ignore -i #{$INVENTORY_FILE} -v #{$PLAYBOOK_POST_PROD_FILE}'`
+            puts(result)
+            puts("Post prod migration configuration complete.")
         else
             puts("Waiting for builds to complete...")
         end
