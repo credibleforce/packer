@@ -30,13 +30,13 @@ sudo python3 -m pip install \
     pywinrm[credssp]
 
 # Vault lab settings - extra-vars bug in awx prevents vaulted creds
-#~/deployment/ansible/convert_vault.py --input-file ~/deployment/ansible/lab_settings.tmp --vault-password-file ~/deployment/ansible/.vault_passwd.txt > ~/deployment/ansible/lab_settings.yml
-#~/deployment/ansible/convert_vault.py --input-file ~/deployment/ansible/vars.tmp --vault-password-file ~/deployment/ansible/.vault_passwd.txt > ~/deployment/ansible/vars.yml
-#rm -f ~/deployment/ansible/*.tmp
+#${HOME}/deployment/ansible/convert_vault.py --input-file ${HOME}/deployment/ansible/lab_settings.tmp --vault-password-file ${HOME}/deployment/ansible/.vault_passwd.txt > ${HOME}/deployment/ansible/lab_settings.yml
+#${HOME}/deployment/ansible/convert_vault.py --input-file ${HOME}/deployment/ansible/vars.tmp --vault-password-file ${HOME}/deployment/ansible/.vault_passwd.txt > ${HOME}/deployment/ansible/vars.yml
+#rm -f ${HOME}/deployment/ansible/*.tmp
 
 # Stage awx certs
-cd ~/deployment/ansible
-ansible-playbook -vv -i ~/deployment/ansible/inventory.yml ~/deployment/ansible/playbooks/awx-self-signed-ssl.yml --extra-vars "@~/deployment/ansible/lab_settings.yml"
+cd ${HOME}/deployment/ansible
+ansible-playbook -vv -i ${HOME}/deployment/ansible/inventory.yml --vault-password-file ${HOME}/deployment/ansible/.vault_passwd.txt  ${HOME}/deployment/ansible/playbooks/awx-self-signed-ssl.yml --extra-vars "@${HOME}/deployment/ansible/lab_settings.yml"
 
 # Install awx
 # remove existing docker configuration
@@ -47,7 +47,7 @@ sudo yum remove docker \
                   docker-latest \
                   docker-latest-logrotate \
                   docker-logrotate \
-                  docker-engine 
+                  docker-engine
 
 # install yum-utils
 sudo yum install -y yum-utils
@@ -74,7 +74,7 @@ sudo systemctl start docker
 rm -rf ./awx
 git clone --branch 16.0.0 --recursive https://github.com/ansible/awx.git
 
-cd awx/installer
+cd ${HOME}/deployment/ansible/awx/installer
 
 cat >lab-inventory<<EOF
 localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python3"
@@ -88,7 +88,7 @@ host_port=80
 host_port_ssl=443
 ssl_certificate=/opt/awx/certs/awx.pem
 ssl_certificate_key=/opt/awx/certs/awx.key
-docker_compose_dir="~/.awx/awxcompose"
+docker_compose_dir="${HOME}/.awx/awxcompose"
 pg_username=awx
 pg_database=awx
 pg_port=5432
@@ -98,34 +98,34 @@ project_data_dir=/opt/awx/projects
 EOF
 
 # install awx
-sudo --preserve-env=PATH ansible-playbook -vvv -i lab-inventory install.yml -e "@/home/vagrant/deployment/ansible/vars.yml"
+sudo ansible-playbook -vvv -i ${HOME}/deployment/ansible/awx/installer/lab-inventory ${HOME}/deployment/ansible/awx/installer/install.yml --vault-password-file ${HOME}/deployment/ansible/.vault_passwd.txt -e "@${HOME}/deployment/ansible/vars.yml"
 
 # sleep
 sleep 60
 
-# # exec migration task and restart the containers to ensure upgrade/migration completes before first run
-sudo docker exec -it awx_web /bin/bash -c "awx-manage migrate --noinput"
-sudo docker stop awx_task awx_web
-sudo docker start awx_task awx_web
+# exec migration task and restart the containers to ensure upgrade/migration completes before first run
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin docker exec -it awx_web /bin/bash -c \"awx-manage migrate --noinput\""
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin docker stop awx_task awx_web"
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin docker start awx_task awx_web"
 
 # sleep
 sleep 120
 
 # add hashi_vault dependancies
-sudo --preserve-env=PATH virtualenv /opt/awx/envs/proservlab-cloud
-sudo python3 -m venv /opt/awx/envs/proservlab-cloud
-sudo /opt/awx/envs/proservlab-cloud/bin/pip3 install --upgrade pip
-sudo /opt/awx/envs/proservlab-cloud/bin/pip3 install psutil
-sudo /opt/awx/envs/proservlab-cloud/bin/pip3 install -U pywinrm
-sudo /opt/awx/envs/proservlab-cloud/bin/pip3 install -U hvac
-sudo /opt/awx/envs/proservlab-cloud/bin/pip3 install -U hvac[parser]
-sudo docker cp /opt/awx/envs/proservlab-cloud awx_task:/var/lib/awx/venv/
-sudo docker cp /opt/awx/envs/proservlab-cloud awx_web:/var/lib/awx/venv/
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin virtualenv /opt/awx/envs/proservlab-cloud"
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin python3 -m venv /opt/awx/envs/proservlab-cloud"
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin /opt/awx/envs/proservlab-cloud/bin/pip3 install --upgrade pip"
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin /opt/awx/envs/proservlab-cloud/bin/pip3 install psutil"
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin /opt/awx/envs/proservlab-cloud/bin/pip3 install -U pywinrm"
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin /opt/awx/envs/proservlab-cloud/bin/pip3 install -U hvac"
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin /opt/awx/envs/proservlab-cloud/bin/pip3 install -U hvac[parser]"
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin docker cp /opt/awx/envs/proservlab-cloud awx_task:/var/lib/awx/venv/"
+sudo /bin/bash -c "PATH=$PATH:/usr/local/bin docker cp /opt/awx/envs/proservlab-cloud awx_web:/var/lib/awx/venv/"
 
 # awxcli (optional)
-sudo pip3 install awxkit
+sudo /bin/bash -l -c "PATH=$PATH:/usr/local/bin python3 -m pip install awxkit"
 
 # base configuration for awx projects
-cd ~/deployment/ansible/
-ansible-playbook -vv -i ~/deployment/ansible/inventory.yml ~/deployment/ansible/playbooks/awx-setup.yml --extra-vars "@~/deployment/ansible/lab_settings.yml"
-#rm -f ~/deployment/ansible/.vault_passwd.txt
+cd ${HOME}/deployment/ansible/
+ansible-playbook -vv -i ${HOME}/deployment/ansible/inventory.yml ${HOME}/deployment/ansible/playbooks/awx-setup.yml --vault-password-file ${HOME}/deployment/ansible/.vault_passwd.txt --extra-vars "@${HOME}/deployment/ansible/lab_settings.yml"
+#rm -f ${HOME}/deployment/ansible/.vault_passwd.txt

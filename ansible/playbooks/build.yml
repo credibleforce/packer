@@ -170,6 +170,7 @@
         template:
           src: ../templates/vars.yml.j2
           dest: "~/deployment/ansible/vars.yml"
+          mode: 0600
 
       # Copy ansible plabooks
       - name: Copy playbookds
@@ -178,12 +179,19 @@
           dest: "~/deployment/ansible/playbooks/"
           mode: 0600
 
-    # Copy ansible plabooks
-      - name: Copy playbookds
+      # Copy ansible scripts
+      - name: Copy scripts
         copy:
           src: ../files/scripts/
           dest: "~/"
           mode: 0700
+
+      - name: Add vault password
+        copy:
+          dest: "~/deployment/ansible/.vault_passwd.txt"
+          content: |
+            {{ lab.settings.ansible.vault_password }}
+          mode: 0600
 
   # update pfsense with dhcp static reservation and dns entries for hosts
   - hosts: pfsense

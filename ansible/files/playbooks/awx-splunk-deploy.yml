@@ -11,8 +11,8 @@
       register: result
       ignore_errors: true
       until:
-        - result is not failed
-        - (result.stdout | from_json).token is defined
+        - result is defined and not result.failed
+        - result.stdout is defined
 
     - name: debug result
       debug:
