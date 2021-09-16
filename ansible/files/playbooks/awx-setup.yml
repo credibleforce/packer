@@ -24,7 +24,7 @@
 
     - name: Create awx organization
       command: |
-        awx --conf.host "https://localhost:443" --conf.token "{{ awx_token }}" --conf.insecure organization create --name "lab" --custom_virtualenv "/var/lib/awx/venv/proservlab-cloud"
+        awx --conf.host "https://localhost:443" --conf.token "{{ awx_token }}" --conf.insecure organization create --name "lab"
 
     - name: Create awx inventory placeholder
       command: |
